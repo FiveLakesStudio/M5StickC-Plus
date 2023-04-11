@@ -28,9 +28,8 @@ void setup()
   M5.Lcd.fillScreen(BackgroundColor);
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
 
-  Serial.begin(SerialPortBaudRate); // set the baud rate to 9600 (or your desired value)
+  Serial.begin(SerialPortBaudRate);
 
-  // LCD display. LCd display
   M5.Lcd.setTextSize(TextSize);
   M5.Lcd.print("Hello\nWorld\nTest\n");
 
@@ -44,7 +43,31 @@ void setup()
 
   M5.Lcd.print("\nConnected\n");
 
-  // Set the Datetime based on the NTPClient time
+  setupRealTimeClockFromInternet();
+}
+
+/* After the program in setup() runs, it runs the program in loop()
+The loop() function is an infinite loop in which the program runs repeatedly
+After the program in the setup() function is executed, the program in the loop() function will be executed
+The loop() function is an endless loop, in which the program will continue to run repeatedly */
+void loop() 
+{
+  char currentLocalTimeStr[16];
+  strftime(currentLocalTimeStr, sizeof(currentLocalTimeStr), "%I:%M:%S %p", getDateTimeNow());   // %H for 24 hour time, %I for 12 Hour time
+
+  M5.Lcd.fillScreen(BackgroundColor);
+  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.println("Current time:");
+  M5.Lcd.println(currentLocalTimeStr);
+
+  //Serial.println("Hello World Test");
+  //Serial.println(currentLocalTimeStr);
+
+  delay(1000); // Wait for a second before sending the next message
+}
+
+void setupRealTimeClockFromInternet()
+{
   if( true ) {             
     timeClient.setTimeOffset(-4 * 60 * 60);  // Set the time zone to GMT -5 (Eastern Standard Time)
   } else {
@@ -58,51 +81,18 @@ void setup()
     time_t currentTime = timeClient.getEpochTime();
     struct tm *timeinfo = localtime(&currentTime);
     setTime(currentTime);
-    setRTC(currentTime);        
+    setRTC(currentTime);       
+
+    delay(1000); // Wait for a second So user can see prompt
   }
-
-  //time_t currentTime = timeClient.getEpochTime();
-  //RTC_TimeTypeDef test = timeToRtcTime(currentTime);
-  //M5.Rtc.SetTime(&test);
-
-  delay(1000); // Wait for a second before sending the next message
 }
 
-bool _firstTimeThoughLoop = true;
-
-/* After the program in setup() runs, it runs the program in loop()
-The loop() function is an infinite loop in which the program runs repeatedly
-After the program in the setup() function is executed, the program in the loop() function will be executed
-The loop() function is an endless loop, in which the program will continue to run repeatedly */
-void loop() 
+struct tm* getDateTimeNow()
 {
   time_t currentTime = now(); // timeClient.getEpochTime();
   struct tm *timeinfo = localtime(&currentTime);
-  char currentLocalTimeStr[16];
-  strftime(currentLocalTimeStr, sizeof(currentLocalTimeStr), "%I:%M:%S %p", timeinfo);   // %H for 24 hour time, %I for 12 Hour time
-
-  if( _firstTimeThoughLoop ) {
-      _firstTimeThoughLoop = false;
-      Serial.println("\nFirst Time");
-      time_t nowTime = now();
-      struct tm *timeinfo = localtime(&nowTime);
-      char currentLocalTimeStr[40];
-      strftime(currentLocalTimeStr, sizeof(currentLocalTimeStr), "%m/%d/%Y %I:%M:%S %p", timeinfo);   // %H for 24 hour time, %I for 12 Hour time
-      Serial.println("Now time:");
-      Serial.println(currentLocalTimeStr);
-  }
-
-  M5.Lcd.fillScreen(BackgroundColor);
-  M5.Lcd.setCursor(0, 0);
-  M5.Lcd.println("Current time:");
-  M5.Lcd.println(currentLocalTimeStr);
-
-  Serial.println("Hello World Test");
-  Serial.println(currentLocalTimeStr);
-
-  delay(10000); // Wait for a second before sending the next message
+  return timeinfo;  
 }
-
 
 void setRTC(time_t timeToSet) {
   // Convert the time_t value to a tm struct
