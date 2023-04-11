@@ -2,9 +2,10 @@
 #include <WiFi.h>
 #include <NTPClient.h>   // https://github.com/arduino-libraries/NTPClient NTPClient by Fabrice Weinberg
 #include <TimeLib.h>     // https://playground.arduino.cc/Code/Time/       Time by Michael Margolis
+#include <Timezone.h>    // https://github.com/JChristensen/Timezone       Jack Christensen
 
 WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "pool.ntp.org");
+NTPClient timeNtpClient(ntpUDP, "pool.ntp.org");
 
 const uint32_t BackgroundColor = BLACK;
 const uint32_t TextColor = GREEN;
@@ -27,12 +28,9 @@ void setup()
   M5.Lcd.setCursor(0, 0);
   M5.Lcd.fillScreen(BackgroundColor);
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
+  M5.Lcd.setTextSize(TextSize);
 
   Serial.begin(SerialPortBaudRate);
-
-  M5.Lcd.setTextSize(TextSize);
-  M5.Lcd.print("Hello\nWorld\nTest\n");
-
   WiFi.begin(WifiSsid, WifiPassword);
 
   M5.Lcd.print("Connecting");
@@ -52,13 +50,18 @@ After the program in the setup() function is executed, the program in the loop()
 The loop() function is an endless loop, in which the program will continue to run repeatedly */
 void loop() 
 {
-  char currentLocalTimeStr[16];
-  strftime(currentLocalTimeStr, sizeof(currentLocalTimeStr), "%I:%M:%S %p", getDateTimeNow());   // %H for 24 hour time, %I for 12 Hour time
+  struct tm* dateTimeNow = getDateTimeNow();
 
   M5.Lcd.fillScreen(BackgroundColor);
   M5.Lcd.setCursor(0, 0);
-  M5.Lcd.println("Current time:");
+
+  char currentLocalTimeStr[16];
+  strftime(currentLocalTimeStr, sizeof(currentLocalTimeStr), "%I:%M:%S %p", dateTimeNow);   // %H for 24 hour time, %I for 12 Hour time
   M5.Lcd.println(currentLocalTimeStr);
+
+  char currentLocalDateStr[16];
+  strftime(currentLocalDateStr, sizeof(currentLocalDateStr), "%m:%d:%Y", dateTimeNow);
+  M5.Lcd.println(currentLocalDateStr);
 
   //Serial.println("Hello World Test");
   //Serial.println(currentLocalTimeStr);
@@ -68,18 +71,21 @@ void loop()
 
 void setupRealTimeClockFromInternet()
 {
-  if( true ) {             
-    timeClient.setTimeOffset(-4 * 60 * 60);  // Set the time zone to GMT -5 (Eastern Standard Time)
-  } else {
-    timeClient.setTimeOffset(-5 * 60 * 60);  // Set the time zone to GMT -5 (Eastern Standard Time)
-  }
-  timeClient.begin();
-  if( timeClient.update() ) {
+  timeNtpClient.begin();
+
+  if( true )    // timeinfo->tm_isdst
+    timeNtpClient.setTimeOffset(-4 * 60 * 60);  // Set the time zone to GMT -5 (Eastern Standard Time)
+  else 
+    timeNtpClient.setTimeOffset(-5 * 60 * 60);  // Set the time zone to GMT -5 (Eastern Standard Time)
+
+  if( timeNtpClient.update() ) 
+  {
     M5.Lcd.fillScreen(BackgroundColor);
     M5.Lcd.setCursor(0, 0);
     M5.Lcd.print("Setting Time");
-    time_t currentTime = timeClient.getEpochTime();
+    time_t currentTime = timeNtpClient.getEpochTime();
     struct tm *timeinfo = localtime(&currentTime);
+
     setTime(currentTime);
     setRTC(currentTime);       
 
