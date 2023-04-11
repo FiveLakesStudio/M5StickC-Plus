@@ -7,6 +7,11 @@
 WiFiUDP ntpUDP;
 NTPClient timeNtpClient(ntpUDP, "pool.ntp.org");
 
+// US Eastern Time Zone (New York, Washington D.C., Miami, etc.)
+TimeChangeRule EDT = {"EDT", Second, Sun, Mar, 2, -240}; // UTC - 4 hours
+TimeChangeRule EST = {"EST", First, Sun, Nov, 2, -300};  // UTC - 5 hours
+Timezone timezone(EDT, EST);
+
 const uint32_t BackgroundColor = BLACK;
 const uint32_t TextColor = GREEN;
 const uint8_t  TextSize = 3;
@@ -73,21 +78,18 @@ void setupRealTimeClockFromInternet()
 {
   timeNtpClient.begin();
 
-  if( true )    // timeinfo->tm_isdst
-    timeNtpClient.setTimeOffset(-4 * 60 * 60);  // Set the time zone to GMT -5 (Eastern Standard Time)
-  else 
-    timeNtpClient.setTimeOffset(-5 * 60 * 60);  // Set the time zone to GMT -5 (Eastern Standard Time)
-
   if( timeNtpClient.update() ) 
   {
     M5.Lcd.fillScreen(BackgroundColor);
     M5.Lcd.setCursor(0, 0);
     M5.Lcd.print("Setting Time");
     time_t currentTime = timeNtpClient.getEpochTime();
-    struct tm *timeinfo = localtime(&currentTime);
+    time_t localTime = timezone.toLocal(currentTime);
 
-    setTime(currentTime);
-    setRTC(currentTime);       
+    struct tm *timeinfo = localtime(&localTime);
+
+    setTime(localTime);
+    setRTC(localTime);       
 
     delay(1000); // Wait for a second So user can see prompt
   }
