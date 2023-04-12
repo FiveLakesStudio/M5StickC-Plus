@@ -1,3 +1,4 @@
+#include <string.h> 
 #include <M5StickCPlus.h>
 #include <WiFi.h>
 #include <NTPClient.h>   // https://github.com/arduino-libraries/NTPClient NTPClient by Fabrice Weinberg
@@ -27,6 +28,10 @@ const char* WifiPassword = "ivacivac";
 
 #define UltrasonicSensorTriggerPin 26
 #define UltrasonicSensorEchoPin 36
+const float UltrasonicSensorMinDistanceCm = 2;
+const float UltrasonicSensorMaxDistanceCm = 400;
+const float UltrasonicSensorUnknownDistance = -1;
+
 
 /* After M5StickC is started or reset
   the program in the setUp () function will be run, and this part will only be run once.
@@ -101,7 +106,11 @@ void loop()
 
   float distance = GetDistanceFeet();
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
-  dtostrf(distance, 6, 2, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
+  if(distance == UltrasonicSensorUnknownDistance)
+     strcpy(distanceStr, "-.--ft"); 
+  else 
+     dtostrf(distance, 6, 2, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
+
   M5.Lcd.setTextSize(TextSizeBig);
   M5.Lcd.setTextColor(BLUE, BackgroundColor);
   M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
@@ -126,6 +135,8 @@ void clearToEndOfLine() {
   M5.Lcd.println("");
 }
 
+// Returns UltrasonicSensorUnknownDistance (-1) if we couldn't read the value
+//
 float GetDistanceFeet() 
 {
   digitalWrite(UltrasonicSensorTriggerPin, LOW);
@@ -161,9 +172,13 @@ float GetDistanceFeet()
   */
   float distanceCm = duration * 0.0344 / 2;
 
-  /*
-  ** Convert CM to Feet 
-  */
+  // Check if the measured distance is within the valid range
+  //
+  if (distanceCm < UltrasonicSensorMinDistanceCm || distanceCm > UltrasonicSensorMaxDistanceCm) 
+    return UltrasonicSensorUnknownDistance;
+
+  // Convert CM to Feet 
+  // 
   float distanceFeet = distanceCm * 0.0328084;
 
   return distanceFeet;
