@@ -15,6 +15,7 @@ Timezone timezone(EDT, EST);
 const uint32_t BackgroundColor = BLACK;
 const uint32_t TextColor = GREEN;
 const uint8_t  TextSize = 3;
+const uint8_t  TextSizeBig = TextSize + 2;
 const uint8_t  ScreenRotation90Degrees = 1;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
 const uint8_t  ScreenRotation270Degrees = 3;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
 const unsigned long SerialPortBaudRate = 9600;
@@ -96,10 +97,16 @@ void loop()
   strftime(currentLocalDateStr, sizeof(currentLocalDateStr), "%m:%d:%Y", dateTimeNow);
   M5.Lcd.print(currentLocalDateStr);  clearToEndOfLine();
 
+  clearToEndOfLine();
+
   float distance = GetDistanceFeet();
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   dtostrf(distance, 6, 2, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
-  M5.Lcd.print(distanceStr);  M5.Lcd.print(" ft"); clearToEndOfLine();
+  M5.Lcd.setTextSize(TextSizeBig);
+  M5.Lcd.setTextColor(BLUE, BackgroundColor);
+  M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
+  M5.Lcd.setTextColor(TextColor, BackgroundColor);
+  M5.Lcd.setTextSize(TextSize);
 
   delay(1000); // Wait for a second before sending the next message
 }
