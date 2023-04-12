@@ -17,6 +17,8 @@ const uint32_t TextColor = GREEN;
 const uint8_t  TextSize = 3;
 const uint8_t  ScreenRotation90Degrees = 1;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
 const unsigned long SerialPortBaudRate = 9600;
+const unsigned long ConnectionTimeoutMs = 10 * 1000;
+const unsigned long ConnectionRetryMs = 500;
 
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
@@ -38,13 +40,32 @@ void setup()
   Serial.begin(SerialPortBaudRate);
   WiFi.begin(WifiSsid, WifiPassword);
 
-  M5.Lcd.print("Connecting");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    M5.Lcd.print(".");
+  M5.Lcd.println("Connecting");
+  unsigned long connectStartTime = millis();
+  char *connectionStatusStr = NULL;
+  while (connectionStatusStr == NULL && millis() - connectStartTime < ConnectionTimeoutMs) {    
+    switch(WiFi.status()) {
+      case WL_CONNECTED:      connectionStatusStr = "Connected";      break;
+      case WL_NO_SHIELD:      connectionStatusStr = "Not Supported";  break;
+      case WL_NO_SSID_AVAIL:  connectionStatusStr = "SSID Not Found"; break;
+
+      case WL_IDLE_STATUS:    
+      case WL_SCAN_COMPLETED: 
+      case WL_CONNECT_FAILED: 
+      case WL_CONNECTION_LOST:
+      case WL_DISCONNECTED:   
+        delay(ConnectionRetryMs);
+        M5.Lcd.print(".");
+         break;
+    }
   }
 
-  M5.Lcd.print("\nConnected\n");
+  if( connectionStatusStr == NULL )
+     connectionStatusStr = "WIFI Timeout";
+
+  M5.Lcd.println("");
+  M5.Lcd.println(connectionStatusStr);
+  delay(1000);
 
   setupRealTimeClockFromInternet();
 }
@@ -76,13 +97,14 @@ void loop()
 
 void setupRealTimeClockFromInternet()
 {
+  M5.Lcd.fillScreen(BackgroundColor);
+  M5.Lcd.setCursor(0, 0);
+
   timeNtpClient.begin();
 
   if( timeNtpClient.update() ) 
   {
-    M5.Lcd.fillScreen(BackgroundColor);
-    M5.Lcd.setCursor(0, 0);
-    M5.Lcd.print("Setting Time");
+    M5.Lcd.print("Setting Time from NTP");
     time_t currentTime = timeNtpClient.getEpochTime();
     time_t localTime = timezone.toLocal(currentTime);
 
@@ -90,9 +112,14 @@ void setupRealTimeClockFromInternet()
 
     setTime(localTime);
     setRTC(localTime);       
-
-    delay(1000); // Wait for a second So user can see prompt
+  } 
+  else
+  {
+    M5.Lcd.print("Setting Time From RTC");
+    setLocalTimeFromRTC();
   }
+
+  delay(1000); // Wait for a second So user can see prompt
 }
 
 struct tm* getDateTimeNow()
@@ -120,4 +147,28 @@ void setRTC(time_t timeToSet) {
   rtcTime.Minutes = timeInfo->tm_min;
   rtcTime.Seconds = timeInfo->tm_sec;
   M5.Rtc.SetTime(&rtcTime);
+}
+
+void setLocalTimeFromRTC() {
+  RTC_TimeTypeDef rtcTime;
+  RTC_DateTypeDef rtcDate;
+
+  M5.Rtc.GetTime(&rtcTime);
+  M5.Rtc.GetData(&rtcDate);
+
+  struct tm timeInfo;
+  timeInfo.tm_year = rtcDate.Year - 1900;
+  timeInfo.tm_mon = rtcDate.Month - 1;
+  timeInfo.tm_mday = rtcDate.Date;
+  timeInfo.tm_hour = rtcTime.Hours;
+  timeInfo.tm_min = rtcTime.Minutes;
+  timeInfo.tm_sec = rtcTime.Seconds;
+  timeInfo.tm_isdst = -1; // Let the system determine DST (Daylight Saving Time)
+
+  time_t epochTime = mktime(&timeInfo);
+
+  timeval currentTime;
+  currentTime.tv_sec = epochTime;
+  currentTime.tv_usec = 0;
+  settimeofday(&currentTime, NULL);
 }
