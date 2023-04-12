@@ -31,7 +31,8 @@ const char* WifiPassword = "ivacivac";
 const float UltrasonicSensorMinDistanceCm = 2;
 const float UltrasonicSensorMaxDistanceCm = 400;
 const float UltrasonicSensorUnknownDistance = -1;
-
+const uint8_t UltrasonicSensorSampleCount = 5;
+const unsigned long UltrasonicSensorSampleDelayMs = 10;
 
 /* After M5StickC is started or reset
   the program in the setUp () function will be run, and this part will only be run once.
@@ -104,7 +105,7 @@ void loop()
 
   clearToEndOfLine();
 
-  float distance = GetDistanceFeet();
+  float distance = GetDistanceFeetAverage(UltrasonicSensorSampleCount);
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)
      strcpy(distanceStr, "  -.--"); 
@@ -133,6 +134,27 @@ void clearToEndOfLine() {
   int remainingWidth = screenWidth - currentX;
   M5.Lcd.fillRect(currentX, currentY, remainingWidth, lineHeight, BackgroundColor);
   M5.Lcd.println("");
+}
+
+float GetDistanceFeetAverage(uint8_t numSamples)
+{
+  float sum = 0;
+  int numSamplesTaken = 0; 
+  float distance = UltrasonicSensorUnknownDistance;
+
+  for (uint8_t index = 0; index < numSamples; index += 1) {
+    distance = GetDistanceFeet();
+    if( distance == UltrasonicSensorUnknownDistance )
+       continue;
+    numSamplesTaken += 1;
+    sum += distance;
+    delay(UltrasonicSensorSampleDelayMs); // Add a short delay between readings
+  }
+
+  if( distance == UltrasonicSensorUnknownDistance || numSamplesTaken == 0)
+     return UltrasonicSensorUnknownDistance;
+
+  return sum / numSamplesTaken;
 }
 
 // Returns UltrasonicSensorUnknownDistance (-1) if we couldn't read the value
