@@ -107,7 +107,7 @@ void loop()
   float distance = GetDistanceFeet();
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)
-     strcpy(distanceStr, "-.--"); 
+     strcpy(distanceStr, "  -.--"); 
   else 
      dtostrf(distance, 6, 2, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
 
