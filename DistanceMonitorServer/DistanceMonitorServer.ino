@@ -8,15 +8,8 @@
 #include <BLEUtils.h>
 #include <BLEServer.h>
 #include <BLE2902.h>
-
-
-WiFiUDP ntpUDP;
-NTPClient timeNtpClient(ntpUDP, "pool.ntp.org");
-
-// US Eastern Time Zone (New York, Washington D.C., Miami, etc.)
-TimeChangeRule EDT = {"EDT", Second, Sun, Mar, 2, -240}; // UTC - 4 hours
-TimeChangeRule EST = {"EST", First, Sun, Nov, 2, -300};  // UTC - 5 hours
-Timezone timezone(EDT, EST);
+#include "UtilLcd.h"
+#include "UtilClock.h"
 
 const uint32_t BackgroundColor = BLACK;
 const uint32_t TextColor = GREEN;
@@ -126,21 +119,6 @@ void loop()
   delay(1000); // Wait for a second before sending the next message
 }
 
-void clearToEndOfLine() {
-  // Get the screen dimensions and rotation
-  int screenWidth = M5.Lcd.width();
-  int screenHeight = M5.Lcd.height();
-  //int screenRotation = M5.Lcd.getRotation();
-
-  int currentX = M5.Lcd.getCursorX();
-  int currentY = M5.Lcd.getCursorY();
-  int lineHeight = M5.Lcd.fontHeight();
-
-  int remainingWidth = screenWidth - currentX;
-  M5.Lcd.fillRect(currentX, currentY, remainingWidth, lineHeight, BackgroundColor);
-  M5.Lcd.println("");
-}
-
 float GetDistanceFeetAverage(uint8_t numSamples)
 {
   float sum = 0;
@@ -211,76 +189,4 @@ float GetDistanceFeet()
   return distanceFeet;
 }
 
-void setupRealTimeClockFromInternet()
-{
-  M5.Lcd.fillScreen(BackgroundColor);
-  M5.Lcd.setCursor(0, 0);
 
-  timeNtpClient.begin();
-
-  if( timeNtpClient.update() ) 
-  {
-    M5.Lcd.println("Setting Time from NTP");
-    time_t currentTime = timeNtpClient.getEpochTime();
-    time_t localTime = timezone.toLocal(currentTime);
-
-    struct tm *timeinfo = localtime(&localTime);
-
-    setTime(localTime);
-    setRTC(localTime);       
-  } 
-  else
-  {
-    M5.Lcd.println("Setting Time From RTC");
-    setLocalTimeFromRTC();
-  }
-
-  delay(1000); // Wait for a second So user can see prompt
-}
-
-struct tm* getDateTimeNow()
-{
-  time_t currentTime = now(); // timeClient.getEpochTime();
-  struct tm *timeinfo = localtime(&currentTime);
-  return timeinfo;  
-}
-
-void setRTC(time_t timeToSet) {
-  // Convert the time_t value to a tm struct
-  struct tm *timeInfo = localtime(&timeToSet);
-
-  // Set the RTC date
-  RTC_DateTypeDef rtcDate;
-  rtcDate.Year = timeInfo->tm_year + 1900;
-  rtcDate.Month = timeInfo->tm_mon + 1;
-  rtcDate.Date = timeInfo->tm_mday;
-  rtcDate.WeekDay = timeInfo->tm_wday;
-  M5.Rtc.SetData(&rtcDate);
-
-  // Set the RTC time
-  RTC_TimeTypeDef rtcTime;
-  rtcTime.Hours = timeInfo->tm_hour;
-  rtcTime.Minutes = timeInfo->tm_min;
-  rtcTime.Seconds = timeInfo->tm_sec;
-  M5.Rtc.SetTime(&rtcTime);
-}
-
-void setLocalTimeFromRTC() {
-  RTC_TimeTypeDef rtcTime;
-  RTC_DateTypeDef rtcDate;
-
-  M5.Rtc.GetTime(&rtcTime);
-  M5.Rtc.GetData(&rtcDate);
-
-  struct tm timeInfo;
-  timeInfo.tm_year = rtcDate.Year - 1900;
-  timeInfo.tm_mon = rtcDate.Month - 1;
-  timeInfo.tm_mday = rtcDate.Date;
-  timeInfo.tm_hour = rtcTime.Hours;
-  timeInfo.tm_min = rtcTime.Minutes;
-  timeInfo.tm_sec = rtcTime.Seconds;
-  timeInfo.tm_isdst = -1; // Let the system determine DST (Daylight Saving Time)
-
-  time_t epochTime = mktime(&timeInfo);
-  setTime(epochTime);
-}
