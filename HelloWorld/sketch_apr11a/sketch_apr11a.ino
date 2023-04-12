@@ -104,7 +104,7 @@ void setupRealTimeClockFromInternet()
 
   if( timeNtpClient.update() ) 
   {
-    M5.Lcd.print("Setting Time from NTP");
+    M5.Lcd.println("Setting Time from NTP");
     time_t currentTime = timeNtpClient.getEpochTime();
     time_t localTime = timezone.toLocal(currentTime);
 
@@ -115,11 +115,11 @@ void setupRealTimeClockFromInternet()
   } 
   else
   {
-    M5.Lcd.print("Setting Time From RTC");
+    M5.Lcd.println("Setting Time From RTC");
     setLocalTimeFromRTC();
   }
 
-  delay(1000); // Wait for a second So user can see prompt
+  delay(5000); // Wait for a second So user can see prompt
 }
 
 struct tm* getDateTimeNow()
@@ -166,9 +166,5 @@ void setLocalTimeFromRTC() {
   timeInfo.tm_isdst = -1; // Let the system determine DST (Daylight Saving Time)
 
   time_t epochTime = mktime(&timeInfo);
-
-  timeval currentTime;
-  currentTime.tv_sec = epochTime;
-  currentTime.tv_usec = 0;
-  settimeofday(&currentTime, NULL);
+  setTime(epochTime);
 }
