@@ -15,7 +15,7 @@ const uint8_t  TextSize = 3;
 const uint8_t  TextSizeBig = TextSize + 2;
 const uint8_t  ScreenRotation90Degrees = 1;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
 const uint8_t  ScreenRotation270Degrees = 3;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
-const unsigned long SerialPortBaudRate = 9600;
+const unsigned long SerialPortBaudRate = 115200;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
 
@@ -43,8 +43,8 @@ void setup()
   //WiFi.begin(WifiSsid, WifiPassword);
 
   bleBeginHost();
-  byte initial_custom_data[] = {0x12, 0x34, 0x56, 0x78};
-  bleStartAdvertisingWithCustomData(initial_custom_data, sizeof(initial_custom_data));
+  //byte initial_custom_data[] = {0x12, 0x34, 0x56, 0x78};
+  //bleStartAdvertisingWithCustomData(initial_custom_data, sizeof(initial_custom_data));
 
   M5.Lcd.println("Connecting");
   //unsigned long connectStartTime = millis();
