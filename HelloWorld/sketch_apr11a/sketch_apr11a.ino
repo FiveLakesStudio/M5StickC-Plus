@@ -16,6 +16,7 @@ const uint32_t BackgroundColor = BLACK;
 const uint32_t TextColor = GREEN;
 const uint8_t  TextSize = 3;
 const uint8_t  ScreenRotation90Degrees = 1;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
+const uint8_t  ScreenRotation270Degrees = 3;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
 const unsigned long SerialPortBaudRate = 9600;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
@@ -84,22 +85,38 @@ void loop()
 {
   struct tm* dateTimeNow = getDateTimeNow();
 
-  M5.Lcd.fillScreen(BackgroundColor);
+  //M5.Lcd.fillScreen(BackgroundColor);
   M5.Lcd.setCursor(0, 0);
 
   char currentLocalTimeStr[16];
   strftime(currentLocalTimeStr, sizeof(currentLocalTimeStr), "%I:%M:%S %p", dateTimeNow);   // %H for 24 hour time, %I for 12 Hour time
-  M5.Lcd.println(currentLocalTimeStr);
+  M5.Lcd.print(currentLocalTimeStr);  clearToEndOfLine();
 
   char currentLocalDateStr[16];
   strftime(currentLocalDateStr, sizeof(currentLocalDateStr), "%m:%d:%Y", dateTimeNow);
-  M5.Lcd.println(currentLocalDateStr);
+  M5.Lcd.print(currentLocalDateStr);  clearToEndOfLine();
 
-  Serial.println("Get Distance");
   float distance = GetDistanceFeet();
-  Serial.print("Got Distance ");  Serial.print(distance);  Serial.println(" ft");
+  char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
+  dtostrf(distance, 6, 2, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
+  M5.Lcd.print(distanceStr);  M5.Lcd.print(" ft"); clearToEndOfLine();
 
   delay(1000); // Wait for a second before sending the next message
+}
+
+void clearToEndOfLine() {
+  // Get the screen dimensions and rotation
+  int screenWidth = M5.Lcd.width();
+  int screenHeight = M5.Lcd.height();
+  //int screenRotation = M5.Lcd.getRotation();
+
+  int currentX = M5.Lcd.getCursorX();
+  int currentY = M5.Lcd.getCursorY();
+  int lineHeight = M5.Lcd.fontHeight();
+
+  int remainingWidth = screenWidth - currentX;
+  M5.Lcd.fillRect(currentX, currentY, remainingWidth, lineHeight, BackgroundColor);
+  M5.Lcd.println("");
 }
 
 float GetDistanceFeet() 
