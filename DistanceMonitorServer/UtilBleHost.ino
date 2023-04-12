@@ -1,39 +1,39 @@
 #include <M5StickCPlus.h>
-#include <BLEDevice.h>     // See https://github.com/espressif/arduino-esp32/blob/master/libraries/BLE/src/BLEDevice.h
-//#include <BLEUtils.h>
-//#include <BLEServer.h>
-//#include <BLE2902.h>
+#include <NimBLEDevice.h>  // https://github.com/h2zero/NimBLE-Arduino
 #include "UtilBleHost.h"
 
 #define SERVICE_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f22"
 #define CHARACTERISTIC_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f99"
 
-void bleBeginHost() {
-  Serial.println("Starting BLE work!");
+NimBLEServer* pServer;
+NimBLEService* pService;
+NimBLECharacteristic* pCharacteristic;
 
-  BLEDevice::init("FLS_USS");
+void bleBeginHost() 
+{
+  NimBLEDevice::init("FLS_USS");
   
-  BLEServer *pServer = BLEDevice::createServer();
+  pServer = NimBLEDevice::createServer();
   
-  BLEService *pService = pServer->createService(SERVICE_UUID);
+  pService = pServer->createService(SERVICE_UUID);
   
-  BLECharacteristic *pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+  pCharacteristic = pService->createCharacteristic(
+    CHARACTERISTIC_UUID,
+    NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::WRITE
+  );
   
   pCharacteristic->setValue("Hello World... 123456");
   
   pService->start();
   
-  // BLEAdvertising *pAdvertising = pServer->getAdvertising();  // this still is working for backward compatibility
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  NimBLEAdvertising* pAdvertising = pServer->getAdvertising();
   
-  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->addServiceUUID(pService->getUUID());
   pAdvertising->setScanResponse(true);
-  pAdvertising->setMinPreferred(0x06);  // functions that help with iPhone connections issue
-  //pAdvertising->setMinPreferred(0x12);
+  pAdvertising->setMinPreferred(0x12);
   
-  BLEDevice::startAdvertising();
+  pAdvertising->start();
   Serial.println("Characteristic defined! Now you can read it in your phone!");
-  Serial.println(BLEDevice::getInitialized() ? "TRUE" : "FALSE");
 }
 
 // https://medium.com/@jalltechlab/bluetooth-ble-advertising-with-arduino-esp32-sample-code-no-coding-part-2-972deb23b1c3
