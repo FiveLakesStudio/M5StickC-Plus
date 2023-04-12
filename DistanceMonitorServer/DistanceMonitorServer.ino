@@ -4,13 +4,10 @@
 #include <NTPClient.h>   // https://github.com/arduino-libraries/NTPClient NTPClient by Fabrice Weinberg
 #include <TimeLib.h>     // https://playground.arduino.cc/Code/Time/       Time by Michael Margolis
 #include <Timezone.h>    // https://github.com/JChristensen/Timezone       Jack Christensen
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-#include <BLE2902.h>
 #include "UtilLcd.h"
 #include "UtilClock.h"
 #include "UtilUltrasonicSensor.h"
+#include "UtilBleHost.h"
 
 const uint32_t BackgroundColor = BLACK;
 const uint32_t TextColor = GREEN;
@@ -43,36 +40,40 @@ void setup()
   M5.Lcd.setTextSize(TextSize);
 
   Serial.begin(SerialPortBaudRate);
-  WiFi.begin(WifiSsid, WifiPassword);
+  //WiFi.begin(WifiSsid, WifiPassword);
+
+  bleBeginHost();
+  byte initial_custom_data[] = {0x12, 0x34, 0x56, 0x78};
+  bleStartAdvertisingWithCustomData(initial_custom_data, sizeof(initial_custom_data));
 
   M5.Lcd.println("Connecting");
-  unsigned long connectStartTime = millis();
-  char *connectionStatusStr = NULL;
-  while (connectionStatusStr == NULL && millis() - connectStartTime < ConnectionTimeoutMs) {    
-    switch(WiFi.status()) {
-      case WL_CONNECTED:      connectionStatusStr = "Connected";      break;
-      case WL_NO_SHIELD:      connectionStatusStr = "Not Supported";  break;
-      case WL_NO_SSID_AVAIL:  connectionStatusStr = "SSID Not Found"; break;
+  //unsigned long connectStartTime = millis();
+  //char *connectionStatusStr = NULL;
+  //while (connectionStatusStr == NULL && millis() - connectStartTime < ConnectionTimeoutMs) {    
+  //  switch(WiFi.status()) {
+  //    case WL_CONNECTED:      connectionStatusStr = "Connected";      break;
+  //    case WL_NO_SHIELD:      connectionStatusStr = "Not Supported";  break;
+  //    case WL_NO_SSID_AVAIL:  connectionStatusStr = "SSID Not Found"; break;
+//
+//      case WL_IDLE_STATUS:    
+//      case WL_SCAN_COMPLETED: 
+//      case WL_CONNECT_FAILED: 
+//      case WL_CONNECTION_LOST:
+//      case WL_DISCONNECTED:   
+//        delay(ConnectionRetryMs);
+//        M5.Lcd.print(".");
+//         break;
+//    }
+//  }
 
-      case WL_IDLE_STATUS:    
-      case WL_SCAN_COMPLETED: 
-      case WL_CONNECT_FAILED: 
-      case WL_CONNECTION_LOST:
-      case WL_DISCONNECTED:   
-        delay(ConnectionRetryMs);
-        M5.Lcd.print(".");
-         break;
-    }
-  }
-
-  if( connectionStatusStr == NULL )
-     connectionStatusStr = "WIFI Timeout";
+//  if( connectionStatusStr == NULL )
+//     connectionStatusStr = "WIFI Timeout";
 
   M5.Lcd.println("");
-  M5.Lcd.println(connectionStatusStr);
+//  M5.Lcd.println(connectionStatusStr);
   delay(1000);
 
-  setupRealTimeClockFromInternet();
+//  setupRealTimeClockFromInternet();
 }
 
 /* After the program in setup() runs, it runs the program in loop()
