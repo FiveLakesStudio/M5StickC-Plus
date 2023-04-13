@@ -35,6 +35,8 @@ void setup()
   Serial.begin(SerialPortBaudRate);
   WiFi.begin(WifiSsid, WifiPassword);
 
+  ledMaxBegin();
+
   bleBeginClient();
 
   M5.Lcd.println("Connecting");
@@ -73,6 +75,8 @@ After the program in the setup() function is executed, the program in the loop()
 The loop() function is an endless loop, in which the program will continue to run repeatedly */
 void loop() 
 {
+  bool ledAnimate();
+
   struct tm* dateTimeNow = getDateTimeNow();
 
   M5.Lcd.setCursor(0, 0);
@@ -99,6 +103,7 @@ void loop()
   M5.Lcd.setTextSize(TextSizeBig);
   M5.Lcd.setTextColor(BLUE, BackgroundColor);
   M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
+  ledPrintln(distanceStr);
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
   M5.Lcd.setTextSize(TextSize);
 
