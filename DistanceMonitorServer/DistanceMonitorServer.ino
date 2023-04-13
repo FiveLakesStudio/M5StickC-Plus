@@ -112,7 +112,7 @@ void loop()
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
   M5.Lcd.setTextSize(TextSize);
 
-  //bleWriteFloatAsFixed16x8(distance);
+  bleWriteFloatAsFixed16x8(distance);
 
   delay(1000); // Wait for a second before sending the next message
 }

@@ -4,12 +4,12 @@
 #include <NTPClient.h>   // https://github.com/arduino-libraries/NTPClient NTPClient by Fabrice Weinberg
 #include <TimeLib.h>     // https://playground.arduino.cc/Code/Time/       Time by Michael Margolis
 #include <Timezone.h>    // https://github.com/JChristensen/Timezone       Jack Christensen
-#include "D:\FLSGIT\M5StickC-Plus\DistanceMonitorServer\UtilLcd.h"
-#include "D:\FLSGIT\M5StickC-Plus\DistanceMonitorServer\UtilClock.h"
-#include "D:\FLSGIT\M5StickC-Plus\DistanceMonitorServer\UtilUltrasonicSensor.h"
-#include "D:\FLSGIT\M5StickC-Plus\DistanceMonitorServer\UtilBleHost.h"
+#include "UtilLcd.h"
+#include "UtilClock.h"
+#include "UtilUltrasonicSensor.h"
+#include "UtilBleClient.h"
 
-const uint32_t BackgroundColor = LIGHTGREY;
+const uint32_t BackgroundColor = DARKGREY;
 const uint32_t TextColor = GREEN;
 const uint8_t  TextSize = 3;
 const uint8_t  TextSizeBig = TextSize + 2;
@@ -22,9 +22,6 @@ const unsigned long ConnectionRetryMs = 500;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
-/* After M5StickC is started or reset
-  the program in the setUp () function will be run, and this part will only be run once.
-  After M5StickCPlus is started or reset, the program in the setup() function will be executed, and this part will only be executed once. */
 void setup()
 {
   M5.begin();
@@ -38,7 +35,7 @@ void setup()
   Serial.begin(SerialPortBaudRate);
   WiFi.begin(WifiSsid, WifiPassword);
 
-  bleBeginHost();
+  bleBeginClient();
 
   M5.Lcd.println("Connecting");
   unsigned long connectStartTime = millis();
@@ -70,8 +67,6 @@ void setup()
   setupRealTimeClockFromInternet();
 }
 
-float gCount = 1.1;
-
 /* After the program in setup() runs, it runs the program in loop()
 The loop() function is an infinite loop in which the program runs repeatedly
 After the program in the setup() function is executed, the program in the loop() function will be executed
@@ -92,7 +87,7 @@ void loop()
 
   clearToEndOfLine();
 
-  float distance = gCount += 1.0;
+  float distance = gDistance;
 
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)
