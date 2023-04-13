@@ -1,5 +1,6 @@
 #include <M5StickCPlus.h>
-#include <NimBLEDevice.h>  // https://github.com/h2zero/NimBLE-Arduino
+#include <NimBLEDevice.h>           // https://github.com/h2zero/NimBLE-Arduino
+#include <NimBLEAdvertisedDevice.h>
 #include "UtilBleClient.h"
 
 #define SERVICE_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
@@ -25,13 +26,17 @@ class MyAdvertisedDeviceCallbacks: public NimBLEAdvertisedDeviceCallbacks {
   }
 };
 
-/*
-void connectToAdvertisedDevice(NimBLEAdvertisedDevice* device) {
-  pClient = NimBLEDevice::createClient(device.getAddress());
-  Serial.print("Connecting to device: ");
-  Serial.println(device->getAddress().toString().c_str());
+void bleConnectToFoundDevice() {
+  if (foundDevice == nullptr) {
+    Serial.println("No device found with the specified service UUID.");
+    return;
+  }
 
-  if (pClient->connect(device)) {
+  pClient = NimBLEDevice::createClient(foundDevice->getAddress());
+  Serial.print("Connecting to found device: ");
+  Serial.println(foundDevice->getAddress().toString().c_str());
+
+  if (pClient->connect(foundDevice)) {
     Serial.println("BLE Connected!");
     pRemoteService = pClient->getService(NimBLEUUID(SERVICE_UUID));
     pRemoteCharacteristic = pRemoteService->getCharacteristic(NimBLEUUID(CHARACTERISTIC_UUID));
@@ -39,7 +44,6 @@ void connectToAdvertisedDevice(NimBLEAdvertisedDevice* device) {
     Serial.println("BLE Failed to connect!");
   }
 }
-*/
 
 void bleBeginClient() 
 {
@@ -57,11 +61,7 @@ void bleBeginClient()
     delay(10);
   }
 
-  //if (foundDevice != nullptr) {
-  //  connectToAdvertisedDevice(foundDevice);
-  //} else {
-  //  Serial.println("No device found with the specified service UUID.");
-  //}
+  bleConnectToFoundDevice();
 }
 
 float bleReadFloatValue() 

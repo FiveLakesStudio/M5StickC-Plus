@@ -1,7 +1,7 @@
 #ifndef UTIL_BLE_CLIENT_H
 #define UTIL_BLE_CLIENT_H
 
-extern float gDistance;
+//extern float gDistance;
 
 void bleBeginClient();
 float bleReadFloatValue();
