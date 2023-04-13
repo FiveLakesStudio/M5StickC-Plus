@@ -12,7 +12,7 @@
 const uint32_t BackgroundColor = DARKGREY;
 const uint32_t TextColor = GREEN;
 const uint8_t  TextSize = 3;
-const uint8_t  TextSizeBig = TextSize + 2;
+const uint8_t  TextSizeBig = TextSize + 1;
 const uint8_t  ScreenRotation90Degrees = 1;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
 const uint8_t  ScreenRotation270Degrees = 3;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
 const unsigned long SerialPortBaudRate = 115200;

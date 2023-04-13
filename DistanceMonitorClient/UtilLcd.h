@@ -2,7 +2,6 @@
 #define UTIL_LCD_H
 
 void clearToEndOfLine();
-
 #endif
 
 
