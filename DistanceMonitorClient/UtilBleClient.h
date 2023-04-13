@@ -6,6 +6,8 @@
 void bleBeginClient();
 float bleReadFloatValue();
 
+bool bleFindAndConnectToDeviceIfNeeded();
+
 float bleReadFloatFromFixed16x8(uint8_t *byteArray);
 #endif
 

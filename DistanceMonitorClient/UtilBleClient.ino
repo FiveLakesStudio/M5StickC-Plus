@@ -8,6 +8,7 @@
 
 const int bleScanTimeSeconds = 5; //In seconds
 
+NimBLEScan* pScan = nullptr;
 NimBLEAdvertisedDevice* foundDevice = nullptr;
 NimBLEClient* pClient = nullptr;
 NimBLERemoteService* pRemoteService = nullptr;
@@ -26,52 +27,63 @@ class MyAdvertisedDeviceCallbacks: public NimBLEAdvertisedDeviceCallbacks {
   }
 };
 
-void bleConnectToFoundDevice() {
-  if (foundDevice == nullptr) {
-    Serial.println("No device found with the specified service UUID.");
-    return;
+// Returns true if we are connected and good to go!
+//
+bool bleFindAndConnectToDeviceIfNeeded() {
+  if (foundDevice == nullptr) {   
+    if( pScan->isScanning() )
+       return false;
+
+    Serial.println("Scanning for devices with service UUID ...");
+    pScan->start(bleScanTimeSeconds, nullptr, true);
+
+    return false;
   }
 
+  if( pClient != nullptr && pClient->isConnected() )
+    return true;
+
+  Serial.print("BLE Trying to Connect to ");  Serial.println(foundDevice->getAddress().toString().c_str());
   pClient = NimBLEDevice::createClient(foundDevice->getAddress());
-  Serial.print("Connecting to found device: ");
-  Serial.println(foundDevice->getAddress().toString().c_str());
 
-  if (pClient->connect(foundDevice)) {
-    Serial.println("BLE Connected!");
-    pRemoteService = pClient->getService(NimBLEUUID(SERVICE_UUID));
-    pRemoteCharacteristic = pRemoteService->getCharacteristic(NimBLEUUID(CHARACTERISTIC_UUID));
-  } else {
-    Serial.println("BLE Failed to connect!");
+  if (!pClient->connect(foundDevice)) {
+    Serial.print("BLE Failed to connect!");  Serial.println(foundDevice->getAddress().toString().c_str());
+    return false;
   }
+
+  Serial.println("BLE Connected!"); Serial.println(foundDevice->getAddress().toString().c_str());
+  pRemoteService = pClient->getService(NimBLEUUID(SERVICE_UUID));
+  pRemoteCharacteristic = pRemoteService->getCharacteristic(NimBLEUUID(CHARACTERISTIC_UUID));
 }
 
 void bleBeginClient() 
 {
   NimBLEDevice::init("");
-  NimBLEScan* pScan = NimBLEDevice::getScan();
+  
+  pScan = NimBLEDevice::getScan();
   pScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pScan->setActiveScan(true); //active scan uses more power, but get results faster
   pScan->setInterval(100);
   pScan->setWindow(99);  // less or equal setInterval value
 
-  Serial.println("Scanning for devices with service UUID ...");
-  pScan->start(bleScanTimeSeconds, nullptr, true);
-
-  while (pScan->isScanning()) {
-    delay(10);
-  }
-
-  bleConnectToFoundDevice();
+  bleFindAndConnectToDeviceIfNeeded();
 }
 
 float bleReadFloatValue() 
 {
+  if( !bleFindAndConnectToDeviceIfNeeded() )
+    return -1.0;
+
   if (pRemoteCharacteristic == nullptr || !pRemoteCharacteristic->canRead()) 
     return -1.0;
 
   std::string value = pRemoteCharacteristic->readValue();
   uint8_t* pData = (uint8_t*)value.data();
   size_t length = value.length();
+
+  if( length != 3 )
+     return -1.0;
+
   float floatValue = bleReadFloatFromFixed16x8(pData);
   return floatValue;
 }
