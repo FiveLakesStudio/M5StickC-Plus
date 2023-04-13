@@ -5,10 +5,64 @@
 #define SERVICE_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
 #define CHARACTERISTIC_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f01"
 
-NimBLEAdvertisedDevice* pDevice;
-NimBLEClient* pClient;
-NimBLERemoteService* pRemoteService;
-NimBLERemoteCharacteristic* pRemoteCharacteristic;
+const int bleScanTimeSeconds = 5; //In seconds
+
+NimBLEAdvertisedDevice* foundDevice = nullptr;
+NimBLEClient* pClient = nullptr;
+NimBLERemoteService* pRemoteService = nullptr;
+NimBLERemoteCharacteristic* pRemoteCharacteristic = nullptr;
+
+class MyAdvertisedDeviceCallbacks: public NimBLEAdvertisedDeviceCallbacks {
+  void onResult(NimBLEAdvertisedDevice* advertisedDevice) {
+    if (advertisedDevice->isAdvertisingService(NimBLEUUID(SERVICE_UUID))) {
+      Serial.print("Found Device: ");
+      Serial.print(advertisedDevice->getAddress().toString().c_str());
+      Serial.print(" RSSI: ");
+      Serial.println(advertisedDevice->getRSSI());
+      
+      foundDevice = new NimBLEAdvertisedDevice(*advertisedDevice);
+    }
+  }
+};
+
+/*
+void connectToAdvertisedDevice(NimBLEAdvertisedDevice* device) {
+  pClient = NimBLEDevice::createClient(device.getAddress());
+  Serial.print("Connecting to device: ");
+  Serial.println(device->getAddress().toString().c_str());
+
+  if (pClient->connect(device)) {
+    Serial.println("BLE Connected!");
+    pRemoteService = pClient->getService(NimBLEUUID(SERVICE_UUID));
+    pRemoteCharacteristic = pRemoteService->getCharacteristic(NimBLEUUID(CHARACTERISTIC_UUID));
+  } else {
+    Serial.println("BLE Failed to connect!");
+  }
+}
+*/
+
+void bleBeginClient() 
+{
+  NimBLEDevice::init("");
+  NimBLEScan* pScan = NimBLEDevice::getScan();
+  pScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
+  pScan->setActiveScan(true); //active scan uses more power, but get results faster
+  pScan->setInterval(100);
+  pScan->setWindow(99);  // less or equal setInterval value
+
+  Serial.println("Scanning for devices with service UUID ...");
+  pScan->start(bleScanTimeSeconds, nullptr, true);
+
+  while (pScan->isScanning()) {
+    delay(10);
+  }
+
+  //if (foundDevice != nullptr) {
+  //  connectToAdvertisedDevice(foundDevice);
+  //} else {
+  //  Serial.println("No device found with the specified service UUID.");
+  //}
+}
 
 float bleReadFloatValue() 
 {
@@ -20,10 +74,6 @@ float bleReadFloatValue()
   size_t length = value.length();
   float floatValue = bleReadFloatFromFixed16x8(pData);
   return floatValue;
-}
-
-void bleBeginClient() 
-{
 }
 
 float bleReadFloatFromFixed16x8(uint8_t *byteArray) {
