@@ -4,6 +4,7 @@
 extern float gDistance;
 
 void bleBeginClient();
+float bleReadFloatValue();
 void bleWriteFloatAsFixed16x8(float value);
 float bleReadFloatFromFixed16x8(uint8_t *byteArray);
 

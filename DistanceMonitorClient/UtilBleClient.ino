@@ -10,40 +10,50 @@ NimBLEClient* pClient;
 NimBLERemoteService* pRemoteService;
 NimBLERemoteCharacteristic* pRemoteCharacteristic;
 
-float gDistance = UltrasonicSensorUnknownDistance;
+//float gDistance = UltrasonicSensorUnknownDistance;
 
-void notifyCallback(NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length)
+//void notifyCallback(NimBLERemoteCharacteristic* pChar, uint8_t* pData, size_t length)
+//{
+//  float value = bleReadFloatFromFixed16x8(pData);
+//  Serial.print("Received value: ");
+//  Serial.println(value);
+//  gDistance = value;
+//}
+
+float bleReadFloatValue() 
 {
-  float value = bleReadFloatFromFixed16x8(pData);
-  Serial.print("Received value: ");
-  Serial.println(value);
-  gDistance = value;
+  if (pRemoteCharacteristic == nullptr || !pRemoteCharacteristic->canRead()) 
+    return -1.0;
+
+  std::string value = pRemoteCharacteristic->readValue();
+  uint8_t* pData = (uint8_t*)value.data();
+  size_t length = value.length();
+  float floatValue = bleReadFloatFromFixed16x8(pData);
+  return floatValue;
 }
 
 void bleBeginClient() 
 {
   NimBLEDevice::init("FLS_USS_Client");
+  NimBLEDevice::setScanFilterMode(NimBLEScan::SCAN_MODE_LOW_LATENCY);
   NimBLEScan* pScan = NimBLEDevice::getScan();
-
-  // Set scan parameters
-  pScan->setInterval(0x50);
-  pScan->setWindow(0x30);
-  pScan->setActiveScan(true);
-  pScan->setFilter(NimBLEScanFilter());
   pScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  
-  // Start scanning for devices
-  Serial.println("Scanning...");
-  pScan->start(5, false);
+
+  scanForServiceUUID(SERVICE_UUID);
 
   // Wait for scan to complete
   while (pScan->isScanning()) {
     delay(10);
   }
 
-  // Connect to the first found device
-  if (MyAdvertisedDeviceCallbacks::m_pDevice != nullptr) {
-    pDevice = MyAdvertisedDeviceCallbacks::m_pDevice;
+  // Connect to the first found device with the name "FLS_USS"
+  //
+  for (int i = 0; i < pScan->getResults()->getCount(); i++) {
+    //NimBLEAdvertisedDevice advertisedDevice = pScan->getResults()->getDevice(i);
+    //if (advertisedDevice.getName() != "FLS_USS")
+    //   continue;
+     
+    pDevice = new NimBLEAdvertisedDevice(advertisedDevice);
     pClient = NimBLEDevice::createClient();
 
     Serial.print("Connecting to device: ");
@@ -55,12 +65,42 @@ void bleBeginClient()
     pRemoteService = pClient->getService(NimBLEUUID(SERVICE_UUID));
     pRemoteCharacteristic = pRemoteService->getCharacteristic(NimBLEUUID(CHARACTERISTIC_UUID));
 
-    if (pRemoteCharacteristic->canNotify()) {
-      pRemoteCharacteristic->registerForNotify(notifyCallback);
-      Serial.println("Registered for notifications");
-    }
+    //if (pRemoteCharacteristic->canNotify()) {
+    //  pRemoteCharacteristic->registerForNotify(notifyCallback);
+    //  Serial.println("Registered for notifications");
+    //}
+    break;
   }
 }
+
+class MyAdvertisedDeviceCallbacks: public NimBLEAdvertisedDeviceCallbacks {
+  void onResult(NimBLEAdvertisedDevice* advertisedDevice) {
+    Serial.print("Found Device: ");
+    Serial.print(advertisedDevice->getAddress().toString().c_str());
+    Serial.print(" RSSI: ");
+    Serial.println(advertisedDevice->getRSSI());
+  }
+};
+
+void scanForServiceUUID(const char* uuid) {
+  NimBLEUUID serviceUUID(uuid);
+  NimBLEScan* pScan = NimBLEDevice::getScan();
+
+  pScan->clearResults();
+  pScan->setInterval(45);
+  pScan->setWindow(15);
+  pScan->setActiveScan(true);
+  pScan->setFilterPolicy(NimBLEScan::FILTER_POLICY_SCAN_ALL);
+  pScan->setFilterDuplicate(true);
+
+  NimBLEScanFilter filter;
+  filter.setServiceUUID(serviceUUID);
+  pScan->addFilter(filter);
+
+  Serial.println("Scanning for devices with service UUID ...");
+  pScan->start(5, nullptr, true);
+}
+
 
 
 void bleWriteFloatAsFixed16x8(float value) {

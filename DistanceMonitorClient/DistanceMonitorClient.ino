@@ -87,7 +87,8 @@ void loop()
 
   clearToEndOfLine();
 
-  float distance = gDistance;
+  //float distance = gDistance;
+  float distance = bleReadFloatValue();
 
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)
