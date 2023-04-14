@@ -97,8 +97,8 @@ void loop()
 
   clearToEndOfLine();
 
-  //float distance = GetDistanceFeetAverage(UltrasonicSensorSampleCount);
-  float distance = gCount += 1.0;
+  float distance = GetDistanceFeetAverage(UltrasonicSensorSampleCount);
+  //float distance = gCount += 1.0;
 
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)

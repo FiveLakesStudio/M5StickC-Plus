@@ -6,9 +6,9 @@
 
 // Pin connections for M5StickC Plus to MAX7219 module
 //
-#define DATA_PIN 26
-#define CLK_PIN 32
-#define CS_PIN 0
+#define DATA_PIN 26  // DIN Orange
+#define CLK_PIN 36   // 36 Green
+#define CS_PIN 32     // Yellow 
 
 // Hardware configuration for the MAX7219 module
 //
