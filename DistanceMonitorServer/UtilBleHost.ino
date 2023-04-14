@@ -9,6 +9,21 @@ NimBLEServer* pServer;
 NimBLEService* pService;
 NimBLECharacteristic* pCharacteristic;
 
+const uint8_t BleBufferMarkerStart = 0xAB;
+const uint8_t BleBufferMarkerEnd = 0xEF;
+
+const int MarkerStartIndex = 0;
+const int HighByteIndex = 1;
+const int MiddleByteIndex = 2;
+const int LowByteIndex = 3;
+const int SumHighByteIndex = 4;
+const int SumLowByteIndex = 5;
+const int MarkerEndIndex = 6;
+
+const int BufferSize = 7;
+
+const float InvalidFixedPointValue = -1.0;
+
 void bleBeginHost() 
 {
   NimBLEDevice::init("FLS_USS");
@@ -37,28 +52,27 @@ void bleBeginHost()
 }
 
 void bleWriteFloatAsFixed16x8(float value) {
-  union {
-    int32_t intValue;
-    uint8_t byteArray[3];
-  } fixedPointBuffer;
+  uint8_t byteArray[BufferSize];
 
-  fixedPointBuffer.intValue = (int32_t)(value * (1 << 8));
-  bleWriteData(fixedPointBuffer.byteArray, sizeof(fixedPointBuffer.byteArray));
-}
+  // Add the fixed value at the beginning of the buffer
+  byteArray[MarkerStartIndex] = BleBufferMarkerStart;
 
-float bleReadFloatFromFixed16x8(uint8_t *byteArray) {
-  union {
-    int32_t intValue;
-    uint8_t byteArray[3];
-  } fixedPointBuffer;
+  int32_t intValue = (int32_t)(value * (1 << 8));
 
-  // Copy the byte array into the union struct
-  memcpy(fixedPointBuffer.byteArray, byteArray, sizeof(fixedPointBuffer.byteArray));
+  // Convert the intValue into 3-byte representation
+  byteArray[HighByteIndex] = (uint8_t)(intValue >> 16); // Store the high byte
+  byteArray[MiddleByteIndex] = (uint8_t)((intValue >> 8) & 0xFF); // Store the middle byte
+  byteArray[LowByteIndex] = (uint8_t)(intValue & 0xFF); // Store the low byte
 
-  // Convert the 16.8 fixed-point value to a float
-  float floatValue = (float)fixedPointBuffer.intValue / (1 << 8);
+  // Sum the first 3 bytes and store the result in the last 2 bytes
+  uint16_t sum = byteArray[HighByteIndex] + byteArray[MiddleByteIndex] + byteArray[LowByteIndex];
+  byteArray[SumHighByteIndex] = (uint8_t)(sum >> 8); // Store the high byte of the sum
+  byteArray[SumLowByteIndex] = (uint8_t)(sum & 0xFF); // Store the low byte of the sum
 
-  return floatValue;
+  // Add the fixed value at the end of the buffer
+  byteArray[MarkerEndIndex] = BleBufferMarkerEnd;
+
+  bleWriteData(byteArray, sizeof(byteArray));
 }
 
 void bleWriteData(byte *data, size_t length) {

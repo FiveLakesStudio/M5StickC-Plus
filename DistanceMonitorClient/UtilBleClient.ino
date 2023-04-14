@@ -6,6 +6,21 @@
 #define SERVICE_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
 #define CHARACTERISTIC_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f01"
 
+const uint8_t BleBufferMarkerStart = 0xAB;
+const uint8_t BleBufferMarkerEnd = 0xEF;
+
+const int MarkerStartIndex = 0;
+const int HighByteIndex = 1;
+const int MiddleByteIndex = 2;
+const int LowByteIndex = 3;
+const int SumHighByteIndex = 4;
+const int SumLowByteIndex = 5;
+const int MarkerEndIndex = 6;
+
+const int BufferSize = 7;
+
+const float InvalidFixedPointValue = -1.0;
+
 const int bleScanTimeSeconds = 5; //In seconds
 
 NimBLEScan* pScan = nullptr;
@@ -81,7 +96,7 @@ float bleReadFloatValue()
   uint8_t* pData = (uint8_t*)value.data();
   size_t length = value.length();
 
-  if( length != 3 )
+  if( length != BufferSize )
      return -1.0;
 
   float floatValue = bleReadFloatFromFixed16x8(pData);
@@ -89,16 +104,33 @@ float bleReadFloatValue()
 }
 
 float bleReadFloatFromFixed16x8(uint8_t *byteArray) {
-  union {
-    int32_t intValue;
-    uint8_t byteArray[3];
-  } fixedPointBuffer;
+  // Verify the start marker
+  if (byteArray[MarkerStartIndex] != BleBufferMarkerStart) {
+    return InvalidFixedPointValue;
+  }
 
-  // Copy the byte array into the union struct
-  memcpy(fixedPointBuffer.byteArray, byteArray, sizeof(fixedPointBuffer.byteArray));
+  int32_t intValue = 0;
 
-  // Convert the 16.8 fixed-point value to a float
-  float floatValue = (float)fixedPointBuffer.intValue / (1 << 8);
+  // Combine the 3 bytes into an int32_t value
+  intValue |= (int32_t)byteArray[HighByteIndex] << 16;
+  intValue |= (int32_t)byteArray[MiddleByteIndex] << 8;
+  intValue |= (int32_t)byteArray[LowByteIndex];
+
+  // Verify the end marker
+  if (byteArray[MarkerEndIndex] != BleBufferMarkerEnd) {
+    return InvalidFixedPointValue;
+  }
+
+  // Check if the computed sum is correct
+  uint16_t sum = byteArray[HighByteIndex] + byteArray[MiddleByteIndex] + byteArray[LowByteIndex];
+  uint16_t receivedSum = (uint16_t)(byteArray[SumHighByteIndex] << 8) | byteArray[SumLowByteIndex];
+
+  if (sum != receivedSum) {
+    return InvalidFixedPointValue;
+  }
+
+  // Convert the fixed-point 16x8 value to a float
+  float floatValue = (float)intValue / (1 << 8);
 
   return floatValue;
 }
