@@ -19,6 +19,10 @@ const unsigned long SerialPortBaudRate = 115200;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
 
+const uint8_t TextSizeBase = 8;
+
+const uint32_t LoopDelayMs = 100;
+
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
@@ -79,19 +83,17 @@ void loop()
 
   struct tm* dateTimeNow = getDateTimeNow();
 
-  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.setCursor(0, TextSize*TextSizeBase*0);
+  ledPrintTimeIfNeeded();
 
-  char currentLocalTimeStr[16];
-  strftime(currentLocalTimeStr, sizeof(currentLocalTimeStr), "%I:%M:%S %p", dateTimeNow);   // %H for 24 hour time, %I for 12 Hour time
-  M5.Lcd.print(currentLocalTimeStr);  clearToEndOfLine();
+  M5.Lcd.setCursor(0, TextSize*TextSizeBase*1);
+  ledPrintDateIfNeeded();
 
-  char currentLocalDateStr[16];
-  strftime(currentLocalDateStr, sizeof(currentLocalDateStr), "%m:%d:%Y", dateTimeNow);
-  M5.Lcd.print(currentLocalDateStr);  clearToEndOfLine();
-
+  M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
   clearToEndOfLine();
 
-  //float distance = gDistance;
+  M5.Lcd.setCursor(0, TextSize*TextSizeBase*3);
+
   float distance = bleReadFloatValue();
 
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
@@ -107,7 +109,7 @@ void loop()
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
   M5.Lcd.setTextSize(TextSize);
 
-  delay(250); // Wait for a second before sending the next message
+  delay(LoopDelayMs); // Wait for a second before sending the next message
 }
 
 

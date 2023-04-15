@@ -19,6 +19,8 @@ const unsigned long SerialPortBaudRate = 115200;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
 
+const uint32_t LoopDelayMs = 100;
+
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
@@ -75,8 +77,6 @@ void setup()
   setupRealTimeClockFromInternet();
 }
 
-float gCount = 1.1;
-
 /* After the program in setup() runs, it runs the program in loop()
 The loop() function is an infinite loop in which the program runs repeatedly
 After the program in the setup() function is executed, the program in the loop() function will be executed
@@ -98,7 +98,6 @@ void loop()
   clearToEndOfLine();
 
   float distance = GetDistanceFeetAverage(UltrasonicSensorSampleCount);
-  //float distance = gCount += 1.0;
 
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)
@@ -114,7 +113,7 @@ void loop()
 
   bleWriteFloatAsFixed16x8(distance);
 
-  delay(250); // Wait for a second before sending the next message
+  delay(LoopDelayMs); // Wait for a second before sending the next message
 }
 
 

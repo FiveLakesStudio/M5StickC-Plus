@@ -5,6 +5,10 @@ void setupRealTimeClockFromInternet();
 struct tm* getDateTimeNow();
 void setRTC(time_t timeToSet);
 void setLocalTimeFromRTC();
+
+void ledPrintTimeIfNeeded();
+void ledPrintDateIfNeeded();
+
 #endif
 
 
