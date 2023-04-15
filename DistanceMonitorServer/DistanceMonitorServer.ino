@@ -24,6 +24,43 @@ const uint32_t LoopDelayMs = 100;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
+void rebootIfNeeded() {
+  tm* dateTime = getDateTimeNow();
+
+  int hours = dateTime->tm_hour;
+  int minutes = dateTime->tm_min;
+  int seconds = dateTime->tm_sec;
+
+  const int16_t textPosY = TextSize*TextSizeBase*2;
+
+  // Return early if it's not 4:00 AM
+  if (!(hours == 4 && minutes == 0 && seconds == 0)) {
+    return;
+  }
+
+  M5.Lcd.setTextColor(TextColor);
+  M5.Lcd.setTextSize(TextSize);
+    
+  M5.Lcd.fillScreen(BackgroundColor);
+  M5.Lcd.setCursor(0, textPosY);
+  M5.Lcd.println("Reboot in 3");
+  delay(1000); // Wait for a while to allow the display to update
+  M5.Lcd.setCursor(0, textPosY);
+    
+  M5.Lcd.fillScreen(BackgroundColor);
+  M5.Lcd.setCursor(0, textPosY);
+  M5.Lcd.println("Reboot in 2");
+  delay(1000); // Wait for a while to allow the display to update
+    
+  M5.Lcd.fillScreen(BackgroundColor);
+  M5.Lcd.setCursor(0, textPosY);
+  M5.Lcd.println("Reboot in 1");
+  delay(1000); // Wait for a while to allow the display to update
+
+  M5.Lcd.fillScreen(RED);
+  esp_restart(); // Reboot the M5StickC
+}
+
 /* After M5StickC is started or reset
   the program in the setUp () function will be run, and this part will only be run once.
   After M5StickCPlus is started or reset, the program in the setup() function will be executed, and this part will only be executed once. */
@@ -113,6 +150,7 @@ void loop()
   bleWriteFloatAsFixed16x8(distance);
 
   delay(LoopDelayMs); // Wait for a second before sending the next message
+  rebootIfNeeded();
 }
 
 

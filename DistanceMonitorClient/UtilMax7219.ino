@@ -67,6 +67,12 @@ void ledPrintln(char *text) {
     return;
   }
 
+  // If there was an error, go ahead and clear the error
+  if (mxParola.getWriteError()) {
+    Serial.println("Write error occurred!");
+    mxParola.clearWriteError();
+  }
+
   // Update the display with the new text
   mxParola.displayText(truncatedText, PA_CENTER, 0, 0, PA_PRINT, PA_PRINT);
 

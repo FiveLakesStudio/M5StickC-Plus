@@ -24,6 +24,47 @@ const uint32_t LoopDelayMs = 100;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
+void rebootIfNeeded() {
+  tm* dateTime = getDateTimeNow();
+
+  int hours = dateTime->tm_hour;
+  int minutes = dateTime->tm_min;
+  int seconds = dateTime->tm_sec;
+
+  const int16_t textPosY = TextSize*TextSizeBase*2;
+
+  // Return early if it's not 4:00 AM
+  if (!(hours == 4 && minutes == 0 && seconds == 0)) {
+    return;
+  }
+
+  M5.Lcd.setTextColor(TextColor);
+  M5.Lcd.setTextSize(TextSize);
+    
+  M5.Lcd.fillScreen(BackgroundColor);
+  M5.Lcd.setCursor(0, textPosY);
+  M5.Lcd.println("Reboot in 3");
+  ledPrintln("Boot 3");
+  delay(1000); // Wait for a while to allow the display to update
+  M5.Lcd.setCursor(0, textPosY);
+    
+  M5.Lcd.fillScreen(BackgroundColor);
+  M5.Lcd.setCursor(0, textPosY);
+  M5.Lcd.println("Reboot in 2");
+  ledPrintln("Boot 2");
+  delay(1000); // Wait for a while to allow the display to update
+    
+  M5.Lcd.fillScreen(BackgroundColor);
+  M5.Lcd.setCursor(0, textPosY);
+  M5.Lcd.println("Reboot in 1");
+  ledPrintln("Boot 1");
+  delay(1000); // Wait for a while to allow the display to update
+
+  M5.Lcd.fillScreen(RED);
+  ledPrintln("");
+  esp_restart(); // Reboot the M5StickC
+}
+
 void setup()
 {
   M5.begin();
@@ -78,7 +119,7 @@ float previousDistance = UltrasonicSensorUnknownDistance;
 unsigned long lastDistanceChangeTime = 0;
 
 void loop() 
-{
+{ 
   bool ledAnimate();
 
   struct tm* dateTimeNow = getDateTimeNow();
@@ -129,6 +170,8 @@ void loop()
     delay(LoopDelayMs);
 
   delay(LoopDelayMs); // Wait for a second before sending the next message
+
+  rebootIfNeeded();
 }
 
 
