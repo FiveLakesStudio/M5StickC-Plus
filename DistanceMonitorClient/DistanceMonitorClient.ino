@@ -19,8 +19,6 @@ const unsigned long SerialPortBaudRate = 115200;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
 
-const uint8_t TextSizeBase = 8;
-
 const uint32_t LoopDelayMs = 100;
 
 const char* WifiSsid = "AirPort";
@@ -100,7 +98,7 @@ void loop()
   if(distance == UltrasonicSensorUnknownDistance)
      strcpy(distanceStr, "  -.--"); 
   else 
-     dtostrf(distance, 6, 2, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
+     dtostrf(distance, 5, 1, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
 
   M5.Lcd.setTextSize(TextSizeBig);
   M5.Lcd.setTextColor(BLUE, BackgroundColor);

@@ -83,3 +83,43 @@ void setLocalTimeFromRTC() {
   setTime(epochTime);
 }
 
+// Add global variables to store the last printed date and time
+char lastTimeStr[16] = "";
+char lastDateStr[16] = "";
+
+void ledPrintTimeIfNeeded() {
+  struct tm* dateTimeNow = getDateTimeNow();
+
+  char currentTimeStr[16];
+  strftime(currentTimeStr, sizeof(currentTimeStr), "%I:%M:%S %p", dateTimeNow); // %H for 24 hour time, %I for 12 Hour time
+
+  if (strcmp(lastTimeStr, currentTimeStr) == 0)
+    return;
+
+  // The time has changed; update the display
+  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.print(currentTimeStr);
+  clearToEndOfLine();
+
+  // Update the last printed time
+  strncpy(lastTimeStr, currentTimeStr, sizeof(lastTimeStr));
+}
+
+void ledPrintDateIfNeeded() {
+  struct tm* dateTimeNow = getDateTimeNow();
+
+  char currentDateStr[16];
+  strftime(currentDateStr, sizeof(currentDateStr), "%m:%d:%Y", dateTimeNow);
+
+  if (strcmp(lastDateStr, currentDateStr) == 0)
+    return;
+
+  // The date has changed; update the display
+  M5.Lcd.setCursor(0, TextSize * 8);
+  M5.Lcd.print(currentDateStr);
+  clearToEndOfLine();
+
+  // Update the last printed date
+  strncpy(lastDateStr, currentDateStr, sizeof(lastDateStr));
+}
+

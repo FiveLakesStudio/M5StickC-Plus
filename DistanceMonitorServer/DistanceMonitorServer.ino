@@ -85,17 +85,16 @@ void loop()
 {
   struct tm* dateTimeNow = getDateTimeNow();
 
-  M5.Lcd.setCursor(0, 0);
+  M5.Lcd.setCursor(0, TextSize*TextSizeBase*0);
+  ledPrintTimeIfNeeded();
 
-  char currentLocalTimeStr[16];
-  strftime(currentLocalTimeStr, sizeof(currentLocalTimeStr), "%I:%M:%S %p", dateTimeNow);   // %H for 24 hour time, %I for 12 Hour time
-  M5.Lcd.print(currentLocalTimeStr);  clearToEndOfLine();
+  M5.Lcd.setCursor(0, TextSize*TextSizeBase*1);
+  ledPrintDateIfNeeded();
 
-  char currentLocalDateStr[16];
-  strftime(currentLocalDateStr, sizeof(currentLocalDateStr), "%m:%d:%Y", dateTimeNow);
-  M5.Lcd.print(currentLocalDateStr);  clearToEndOfLine();
-
+  M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
   clearToEndOfLine();
+
+  M5.Lcd.setCursor(0, TextSize*TextSizeBase*3);
 
   float distance = GetDistanceFeetAverage(UltrasonicSensorSampleCount);
 
@@ -103,7 +102,7 @@ void loop()
   if(distance == UltrasonicSensorUnknownDistance)
      strcpy(distanceStr, "  -.--"); 
   else 
-     dtostrf(distance, 6, 2, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
+     dtostrf(distance, 5, 1, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
 
   M5.Lcd.setTextSize(TextSizeBig);
   M5.Lcd.setTextColor(BLUE, BackgroundColor);
