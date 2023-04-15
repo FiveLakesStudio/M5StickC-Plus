@@ -87,14 +87,14 @@ void setLocalTimeFromRTC() {
 char lastTimeStr[16] = "";
 char lastDateStr[16] = "";
 
-void ledPrintTimeIfNeeded() {
+char* ledPrintTimeIfNeeded() {
   struct tm* dateTimeNow = getDateTimeNow();
 
   char currentTimeStr[16];
   strftime(currentTimeStr, sizeof(currentTimeStr), "%I:%M:%S %p", dateTimeNow); // %H for 24 hour time, %I for 12 Hour time
 
   if (strcmp(lastTimeStr, currentTimeStr) == 0)
-    return;
+    return lastTimeStr;
 
   // The time has changed; update the display
   M5.Lcd.setCursor(0, 0);
@@ -103,16 +103,17 @@ void ledPrintTimeIfNeeded() {
 
   // Update the last printed time
   strncpy(lastTimeStr, currentTimeStr, sizeof(lastTimeStr));
+      return lastTimeStr;
 }
 
-void ledPrintDateIfNeeded() {
+char*  ledPrintDateIfNeeded() {
   struct tm* dateTimeNow = getDateTimeNow();
 
   char currentDateStr[16];
   strftime(currentDateStr, sizeof(currentDateStr), "%m:%d:%Y", dateTimeNow);
 
   if (strcmp(lastDateStr, currentDateStr) == 0)
-    return;
+    return lastDateStr;
 
   // The date has changed; update the display
   M5.Lcd.setCursor(0, TextSize * 8);
@@ -121,5 +122,6 @@ void ledPrintDateIfNeeded() {
 
   // Update the last printed date
   strncpy(lastDateStr, currentDateStr, sizeof(lastDateStr));
+      return lastDateStr;
 }
 

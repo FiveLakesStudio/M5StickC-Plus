@@ -8,7 +8,9 @@ struct tm* getDateTimeNow();
 void setRTC(time_t timeToSet);
 void setLocalTimeFromRTC();
 
-void ledPrintTimeIfNeeded();
-void ledPrintDateIfNeeded();
+char* ledPrintTimeIfNeeded();
+char* ledPrintDateIfNeeded();
 
 #endif
+
+
