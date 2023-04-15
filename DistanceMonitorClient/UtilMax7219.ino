@@ -6,9 +6,9 @@
 
 // Pin connections for M5StickC Plus to MAX7219 module
 //
-#define DATA_PIN 26  // DIN Orange
-#define CLK_PIN 36   // 36 Green
-#define CS_PIN 32     // Yellow 
+#define DATA_PIN  26 // or MOSI ORANGE
+#define CLK_PIN   0  // or SCK  Green
+#define CS_PIN    25 // or SS   YELLOW
 
 // Hardware configuration for the MAX7219 module
 //
@@ -17,8 +17,7 @@
 
 // Create the objects needed for doing text and controlling the display
 //
-//MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
-MD_Parola mxParola = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
+MD_Parola mxParola = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 void ledMaxBegin() {
   mxParola.begin();
@@ -28,7 +27,7 @@ void ledMaxBegin() {
 }
 
 void ledPrintln(char *text) {
-  //  mxParola.displayReset();
+  mxParola.displayReset();
   mxParola.displayText(text, PA_CENTER, 0, 0, PA_PRINT, PA_PRINT);
 }
 
