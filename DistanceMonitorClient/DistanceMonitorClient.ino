@@ -71,10 +71,12 @@ void setup()
   setupRealTimeClockFromInternet();
 }
 
-/* After the program in setup() runs, it runs the program in loop()
-The loop() function is an infinite loop in which the program runs repeatedly
-After the program in the setup() function is executed, the program in the loop() function will be executed
-The loop() function is an endless loop, in which the program will continue to run repeatedly */
+const uint32_t NoChangeDistanceTimeoutMs = 10 * 1000; // 10 seconds
+
+// Add a global variable to store the previous distance and the time of the last change
+float previousDistance = UltrasonicSensorUnknownDistance;
+unsigned long lastDistanceChangeTime = 0;
+
 void loop() 
 {
   bool ledAnimate();
@@ -82,10 +84,10 @@ void loop()
   struct tm* dateTimeNow = getDateTimeNow();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*0);
-  char* timeStr = ledPrintTimeIfNeeded();
+  ledPrintTimeIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*1);
-  char* dateStr = ledPrintDateIfNeeded();
+  ledPrintDateIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
   clearToEndOfLine();
@@ -100,10 +102,25 @@ void loop()
   else 
      dtostrf(distance, 5, 1, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
 
+  const float differenceThreshold = 0.1;
+  if (abs(distance - previousDistance) >= differenceThreshold) {
+    previousDistance = distance;
+    lastDistanceChangeTime = millis();
+  }
+
   M5.Lcd.setTextSize(TextSizeBig);
   M5.Lcd.setTextColor(BLUE, BackgroundColor);
   M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
-  ledPrintln(distanceStr);
+
+  if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
+      struct tm* dateTimeNow = getDateTimeNow();
+      char currentTimeStr[16];
+      strftime(currentTimeStr, sizeof(currentTimeStr), "%I:%M%p", dateTimeNow);
+      ledPrintln( currentTimeStr );
+  } else {
+      ledPrintln( distanceStr);
+  }
+  
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
   M5.Lcd.setTextSize(TextSize);
 
