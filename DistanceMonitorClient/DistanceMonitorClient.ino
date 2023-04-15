@@ -19,7 +19,7 @@ const unsigned long SerialPortBaudRate = 115200;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
 
-const uint32_t LoopDelayMs = 100;
+const uint32_t LoopDelayMs = 250;
 
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
@@ -156,7 +156,7 @@ void loop()
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
       struct tm* dateTimeNow = getDateTimeNow();
       char currentTimeStr[16];
-      strftime(currentTimeStr, sizeof(currentTimeStr), "%I:%M", dateTimeNow);
+      strftime(currentTimeStr, sizeof(currentTimeStr), dateTimeNow->tm_sec % 2 == 0 ? "%I:%M" : "%I %M", dateTimeNow);
       strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
       ledPrintln( currentTimeStr );
   } else {

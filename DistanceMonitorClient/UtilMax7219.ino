@@ -64,6 +64,7 @@ void ledPrintln(char *text) {
   // Check if the new text is the same as the last displayed text
   if (strcmp(truncatedText, currentShowingText) == 0) {
     // If the text is the same, don't update the display and return
+    Serial.print("Same text, skipping: ");     Serial.println(currentShowingText);
     return;
   }
 
@@ -73,16 +74,18 @@ void ledPrintln(char *text) {
 
   // If there was an error, go ahead and clear the error
   if (mxParola.getWriteError()) {
-    Serial.println("Write error occurred!");
+    Serial.print("Write error occurred - 1: ");  Serial.println(currentShowingText);
     mxParola.clearWriteError();
   }
 
   // Update the display with the new text
   mxParola.displayText(currentShowingText, PA_CENTER, 0, 0, PA_PRINT, PA_PRINT);
+    Serial.print("DISPLAY Text: ");     Serial.println(currentShowingText);
+
 
   // If there was an error, go ahead and clear the error
   if (mxParola.getWriteError()) {
-    Serial.println("Write error occurred!");
+    Serial.print("Write error occurred - 2: ");  Serial.println(currentShowingText);
     mxParola.clearWriteError();
   }
 
