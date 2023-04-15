@@ -21,14 +21,17 @@ MD_Parola mxParola = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEV
 
 void ledMaxBegin() {
   mxParola.begin();
+  mxParola.setIntensity(5); // set brightness to 5 (out of 15)
 
-  ledPrintln("Welcome...");
+  mxParola.displayReset();
+
+  ledPrintln("Hello");
   ledAnimate();
 }
 
 void ledPrintln(char *text) {
-  mxParola.displayReset();
   mxParola.displayText(text, PA_CENTER, 0, 0, PA_PRINT, PA_PRINT);
+  ledAnimate();
 }
 
 bool ledAnimate() {

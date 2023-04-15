@@ -107,7 +107,7 @@ void loop()
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
   M5.Lcd.setTextSize(TextSize);
 
-  delay(1000); // Wait for a second before sending the next message
+  delay(250); // Wait for a second before sending the next message
 }
 
 

@@ -114,7 +114,7 @@ void loop()
 
   bleWriteFloatAsFixed16x8(distance);
 
-  delay(1000); // Wait for a second before sending the next message
+  delay(250); // Wait for a second before sending the next message
 }
 
 
