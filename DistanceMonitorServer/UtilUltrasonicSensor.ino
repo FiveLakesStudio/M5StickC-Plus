@@ -4,23 +4,52 @@
 float GetDistanceFeetAverage(uint8_t numSamples)
 {
   float sum = 0;
-  int numSamplesTaken = 0; 
+  int numSamplesTaken = 0;
   float distance = UltrasonicSensorUnknownDistance;
+  float neighborDifferenceThreshold = 0.4;
 
-  for (uint8_t index = 0; index < numSamples; index += 1) {
+  float samples[numSamples];
+
+  // Get all samples
+  for (uint8_t index = 0; index < numSamples; index++) {
     distance = GetDistanceFeet();
-    if( distance == UltrasonicSensorUnknownDistance )
-       continue;
-    numSamplesTaken += 1;
-    sum += distance;
+    samples[index] = distance;
+    if (distance != UltrasonicSensorUnknownDistance) {
+      numSamplesTaken += 1;
+    }
     delay(UltrasonicSensorSampleDelayMs); // Add a short delay between readings
   }
 
-  if( distance == UltrasonicSensorUnknownDistance || numSamplesTaken == 0)
-     return UltrasonicSensorUnknownDistance;
+  // Calculate the average while excluding samples that are more than 0.4 from their neighbors
+  int validSamples = 0;
+  for (uint8_t index = 0; index < numSamples; index++) {
+    bool includeSample = true;
 
-  return sum / numSamplesTaken;
+    // Check the difference with the previous neighbor
+    if (index > 0 && samples[index - 1] != UltrasonicSensorUnknownDistance &&
+        abs(samples[index] - samples[index - 1]) > neighborDifferenceThreshold) {
+      includeSample = false;
+    }
+
+    // Check the difference with the next neighbor
+    if (index < numSamples - 1 && samples[index + 1] != UltrasonicSensorUnknownDistance &&
+        abs(samples[index] - samples[index + 1]) > neighborDifferenceThreshold) {
+      includeSample = false;
+    }
+
+    if (includeSample && samples[index] != UltrasonicSensorUnknownDistance) {
+      sum += samples[index];
+      validSamples += 1;
+    }
+  }
+
+  if (distance == UltrasonicSensorUnknownDistance || validSamples == 0) {
+    return UltrasonicSensorUnknownDistance;
+  }
+
+  return sum / validSamples;
 }
+
 
 // Returns UltrasonicSensorUnknownDistance (-1) if we couldn't read the value
 //
