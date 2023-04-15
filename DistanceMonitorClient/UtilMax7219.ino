@@ -54,18 +54,22 @@ bool resetDisplayIfNeeded() {
 
 void ledPrintln(char *text) {
   // Declare a static buffer to store the last displayed text
-  static char lastText[32] = {0};
+  static char currentShowingText[10] = {0};
 
   // Check the input text length and truncate it if necessary
-  char truncatedText[32];
+  char truncatedText[sizeof(currentShowingText)];
   strncpy(truncatedText, text, sizeof(truncatedText) - 1);
   truncatedText[sizeof(truncatedText) - 1] = '\0';
 
   // Check if the new text is the same as the last displayed text
-  if (strcmp(truncatedText, lastText) == 0) {
+  if (strcmp(truncatedText, currentShowingText) == 0) {
     // If the text is the same, don't update the display and return
     return;
   }
+
+  // Update the last displayed text with the new text
+  strncpy(currentShowingText, truncatedText, sizeof(currentShowingText) - 1);
+  currentShowingText[sizeof(currentShowingText) - 1] = '\0';
 
   // If there was an error, go ahead and clear the error
   if (mxParola.getWriteError()) {
@@ -74,7 +78,7 @@ void ledPrintln(char *text) {
   }
 
   // Update the display with the new text
-  mxParola.displayText(truncatedText, PA_CENTER, 0, 0, PA_PRINT, PA_PRINT);
+  mxParola.displayText(currentShowingText, PA_CENTER, 0, 0, PA_PRINT, PA_PRINT);
 
   // If there was an error, go ahead and clear the error
   if (mxParola.getWriteError()) {
@@ -83,10 +87,6 @@ void ledPrintln(char *text) {
   }
 
   ledAnimate();
-
-  // Update the last displayed text with the new text
-  strncpy(lastText, truncatedText, sizeof(lastText) - 1);
-  lastText[sizeof(lastText) - 1] = '\0';
 }
 
 bool ledAnimate() {
