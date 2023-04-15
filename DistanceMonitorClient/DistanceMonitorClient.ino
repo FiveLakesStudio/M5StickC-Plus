@@ -115,7 +115,8 @@ void loop()
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
       struct tm* dateTimeNow = getDateTimeNow();
       char currentTimeStr[16];
-      strftime(currentTimeStr, sizeof(currentTimeStr), "%I:%M%p", dateTimeNow);
+      strftime(currentTimeStr, sizeof(currentTimeStr), "%I:%M", dateTimeNow);
+      strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
       ledPrintln( currentTimeStr );
   } else {
       ledPrintln( distanceStr);
