@@ -125,6 +125,9 @@ void loop()
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
   M5.Lcd.setTextSize(TextSize);
 
+  if( resetDisplayIfNeeded() )
+    delay(LoopDelayMs);
+
   delay(LoopDelayMs); // Wait for a second before sending the next message
 }
 
