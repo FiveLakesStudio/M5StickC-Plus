@@ -132,10 +132,10 @@ void loop()
   }
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*0);
-  char* timeStr = ledPrintTimeIfNeeded();
+  char* timeStr = lcdPrintTimeIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*1);
-  char* dateStr = ledPrintDateIfNeeded();
+  char* dateStr = lcdPrintDateIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
   clearToEndOfLine();

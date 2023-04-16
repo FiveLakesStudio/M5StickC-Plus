@@ -87,7 +87,7 @@ void setLocalTimeFromRTC() {
 char lastTimeStr[16] = "";
 char lastDateStr[16] = "";
 
-char* ledPrintTimeIfNeeded() {
+char* lcdPrintTimeIfNeeded() {
   struct tm* dateTimeNow = getDateTimeNow();
 
   char currentTimeStr[16];
@@ -106,7 +106,7 @@ char* ledPrintTimeIfNeeded() {
       return lastTimeStr;
 }
 
-char*  ledPrintDateIfNeeded() {
+char*  lcdPrintDateIfNeeded() {
   struct tm* dateTimeNow = getDateTimeNow();
 
   char currentDateStr[16];
