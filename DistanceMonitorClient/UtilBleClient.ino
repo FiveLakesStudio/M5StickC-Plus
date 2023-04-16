@@ -109,6 +109,12 @@ float bleReadFloatFromFixed16x8(uint8_t *byteArray) {
     return InvalidFixedPointValue;
   }
 
+  // This is a bit of a hack right now as I don't want to debug what's going on with signed floats and this doesn't really support
+  // negactive distances anyway...
+  //
+  if( byteArray[HighByteIndex] == 0xFF && byteArray[MiddleByteIndex] == 0xFF && byteArray[LowByteIndex] == 0xFF)
+    return InvalidFixedPointValue;
+
   int32_t intValue = 0;
 
   // Combine the 3 bytes into an int32_t value

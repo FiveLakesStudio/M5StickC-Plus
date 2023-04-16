@@ -57,17 +57,29 @@ void bleWriteFloatAsFixed16x8(float value) {
   // Add the fixed value at the beginning of the buffer
   byteArray[MarkerStartIndex] = BleBufferMarkerStart;
 
-  int32_t intValue = (int32_t)(value * (1 << 8));
+  // This is a bit of a hack right now as I don't want to debug what's going on with signed floats and this doesn't really support
+  // negactive distances anyway...
+  //
+  if( value < 0 ) {
+    byteArray[HighByteIndex] = 0xFF;
+    byteArray[MiddleByteIndex] = 0xFF;
+    byteArray[LowByteIndex] = 0xFF;
+    byteArray[SumHighByteIndex] = 0xFF;
+    byteArray[SumLowByteIndex] = 0xFF;
+  }
+  else {
+    int32_t intValue = (int32_t)(value * (1 << 8));
 
-  // Convert the intValue into 3-byte representation
-  byteArray[HighByteIndex] = (uint8_t)(intValue >> 16); // Store the high byte
-  byteArray[MiddleByteIndex] = (uint8_t)((intValue >> 8) & 0xFF); // Store the middle byte
-  byteArray[LowByteIndex] = (uint8_t)(intValue & 0xFF); // Store the low byte
+    // Convert the intValue into 3-byte representation
+    byteArray[HighByteIndex] = (uint8_t)(intValue >> 16); // Store the high byte
+    byteArray[MiddleByteIndex] = (uint8_t)((intValue >> 8) & 0xFF); // Store the middle byte
+    byteArray[LowByteIndex] = (uint8_t)(intValue & 0xFF); // Store the low byte
 
-  // Sum the first 3 bytes and store the result in the last 2 bytes
-  uint16_t sum = byteArray[HighByteIndex] + byteArray[MiddleByteIndex] + byteArray[LowByteIndex];
-  byteArray[SumHighByteIndex] = (uint8_t)(sum >> 8); // Store the high byte of the sum
-  byteArray[SumLowByteIndex] = (uint8_t)(sum & 0xFF); // Store the low byte of the sum
+    // Sum the first 3 bytes and store the result in the last 2 bytes
+    uint16_t sum = byteArray[HighByteIndex] + byteArray[MiddleByteIndex] + byteArray[LowByteIndex];
+    byteArray[SumHighByteIndex] = (uint8_t)(sum >> 8); // Store the high byte of the sum
+    byteArray[SumLowByteIndex] = (uint8_t)(sum & 0xFF); // Store the low byte of the sum
+  }
 
   // Add the fixed value at the end of the buffer
   byteArray[MarkerEndIndex] = BleBufferMarkerEnd;
