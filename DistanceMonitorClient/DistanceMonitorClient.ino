@@ -19,6 +19,8 @@ const unsigned long SerialPortBaudRate = 115200;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
 
+const float MaxDistanceToShowStop = 0.7;
+
 const uint32_t LoopDelayMs = 250;
 
 const char* WifiSsid = "AirPort";
@@ -152,9 +154,13 @@ void loop()
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)
      strcpy(distanceStr, "  -.--"); 
-  else 
-     dtostrf(distance, 5, 1, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
-
+  else if(distance < MaxDistanceToShowStop) {
+    strncpy(distanceStr, "STOP", sizeof(distanceStr));
+    distanceStr[sizeof(distanceStr) - 1] = '\0'; // Ensure null termination
+  } else {
+    dtostrf(distance - MaxDistanceToShowStop, 5, 1, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
+  }
+ 
   const float differenceThreshold = 0.1;
   if (abs(distance - previousDistance) >= differenceThreshold) {
     previousDistance = distance;
