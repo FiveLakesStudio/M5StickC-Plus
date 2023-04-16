@@ -95,3 +95,9 @@ void ledPrintln(char *text) {
 bool ledAnimate() {
   return mxParola.displayAnimate();
 }
+
+void ledClear() {
+  mxParola.displayClear();  
+}
+
+

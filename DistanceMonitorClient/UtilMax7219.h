@@ -5,6 +5,7 @@ void ledMaxBegin();
 bool resetDisplayIfNeeded();
 void ledPrintln(char *text);
 bool ledAnimate();
+void ledClear();
 #endif
 
 

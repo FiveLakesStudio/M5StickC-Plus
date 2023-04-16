@@ -24,19 +24,21 @@ const uint32_t LoopDelayMs = 250;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
-void rebootIfNeeded() {
-  tm* dateTime = getDateTimeNow();
+void rebootIfNeeded(bool force) {
+  if( !force ) {
+    tm* dateTime = getDateTimeNow();
 
-  int hours = dateTime->tm_hour;
-  int minutes = dateTime->tm_min;
-  int seconds = dateTime->tm_sec;
+    int hours = dateTime->tm_hour;
+    int minutes = dateTime->tm_min;
+    int seconds = dateTime->tm_sec;
+
+    // Return early if it's not 4:00 AM
+    if (!(hours == 4 && minutes == 0 && seconds == 0) ) {
+      return;
+    }
+  }
 
   const int16_t textPosY = TextSize*TextSizeBase*2;
-
-  // Return early if it's not 4:00 AM
-  if (!(hours == 4 && minutes == 0 && seconds == 0)) {
-    return;
-  }
 
   M5.Lcd.setTextColor(TextColor);
   M5.Lcd.setTextSize(TextSize);
@@ -120,6 +122,13 @@ unsigned long lastDistanceChangeTime = 0;
 
 void loop() 
 { 
+  M5.update();
+
+  // Check if button A is pressed
+  if (M5.BtnA.wasReleasefor(500)) {
+    rebootIfNeeded(true);
+  }
+
   bool ledAnimate();
 
   struct tm* dateTimeNow = getDateTimeNow();
@@ -154,11 +163,12 @@ void loop()
   M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
 
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
-      struct tm* dateTimeNow = getDateTimeNow();
-      char currentTimeStr[16];
-      strftime(currentTimeStr, sizeof(currentTimeStr), dateTimeNow->tm_sec % 2 == 0 ? "%I:%M" : "%I %M", dateTimeNow);
-      strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
-      ledPrintln( currentTimeStr );
+      //struct tm* dateTimeNow = getDateTimeNow();
+      //char currentTimeStr[16];
+      //strftime(currentTimeStr, sizeof(currentTimeStr), dateTimeNow->tm_sec % 2 == 0 ? "%I:%M" : "%I %M", dateTimeNow);
+      //strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
+      //ledPrintln( currentTimeStr );
+      ledClear();
   } else {
       ledPrintln( distanceStr);
   }
@@ -171,7 +181,7 @@ void loop()
 
   delay(LoopDelayMs); // Wait for a second before sending the next message
 
-  rebootIfNeeded();
+  rebootIfNeeded(false);
 }
 
 
