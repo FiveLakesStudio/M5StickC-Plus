@@ -139,10 +139,10 @@ void loop()
   struct tm* dateTimeNow = getDateTimeNow();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*0);
-  ledPrintTimeIfNeeded();
+  lcdPrintTimeIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*1);
-  ledPrintDateIfNeeded();
+  lcdPrintDateIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
   clearToEndOfLine();
