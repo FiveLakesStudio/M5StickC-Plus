@@ -24,19 +24,21 @@ const uint32_t LoopDelayMs = 100;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
-void rebootIfNeeded() {
-  tm* dateTime = getDateTimeNow();
+void rebootIfNeeded(bool force) {
+  if( !force ) {
+    tm* dateTime = getDateTimeNow();
 
-  int hours = dateTime->tm_hour;
-  int minutes = dateTime->tm_min;
-  int seconds = dateTime->tm_sec;
+    int hours = dateTime->tm_hour;
+    int minutes = dateTime->tm_min;
+    int seconds = dateTime->tm_sec;
+
+    // Return early if it's not 4:00 AM
+    if (!(hours == 4 && minutes == 0 && seconds == 0) ) {
+      return;
+    }
+  }
 
   const int16_t textPosY = TextSize*TextSizeBase*2;
-
-  // Return early if it's not 4:00 AM
-  if (!(hours == 4 && minutes == 0 && seconds == 0)) {
-    return;
-  }
 
   M5.Lcd.setTextColor(TextColor);
   M5.Lcd.setTextSize(TextSize);
@@ -122,6 +124,13 @@ void loop()
 {
   struct tm* dateTimeNow = getDateTimeNow();
 
+  M5.update();
+
+  // Check if button A is pressed
+  if (M5.BtnA.wasReleasefor(500)) {
+    rebootIfNeeded(true);
+  }
+
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*0);
   char* timeStr = ledPrintTimeIfNeeded();
 
@@ -150,7 +159,7 @@ void loop()
   bleWriteFloatAsFixed16x8(distance);
 
   delay(LoopDelayMs); // Wait for a second before sending the next message
-  rebootIfNeeded();
+  rebootIfNeeded(false);
 }
 
 

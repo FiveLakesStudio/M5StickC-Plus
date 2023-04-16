@@ -120,6 +120,9 @@ const uint32_t NoChangeDistanceTimeoutMs = 10 * 1000; // 10 seconds
 float previousDistance = UltrasonicSensorUnknownDistance;
 unsigned long lastDistanceChangeTime = 0;
 
+const unsigned long LedClearIntervalMs = 10 * 1000; // 10 seconds
+unsigned long lastLedClearTime = 0;
+
 void loop() 
 { 
   M5.update();
@@ -163,12 +166,17 @@ void loop()
   M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
 
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
-      //struct tm* dateTimeNow = getDateTimeNow();
-      //char currentTimeStr[16];
-      //strftime(currentTimeStr, sizeof(currentTimeStr), dateTimeNow->tm_sec % 2 == 0 ? "%I:%M" : "%I %M", dateTimeNow);
-      //strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
-      //ledPrintln( currentTimeStr );
-      ledClear();
+    // Clear the LED periodically to see if we can recover from the display getting confused.
+    if (millis() - lastLedClearTime >= LedClearIntervalMs) {
+      ledClear(); // Clear the LED display
+      lastLedClearTime = millis(); // Update the last time ledClear() was called
+    }
+
+      struct tm* dateTimeNow = getDateTimeNow();
+      char currentTimeStr[16];
+      strftime(currentTimeStr, sizeof(currentTimeStr), dateTimeNow->tm_sec % 2 == 0 ? "%I:%M" : "%I %M", dateTimeNow);
+      strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
+      ledPrintln( currentTimeStr );
   } else {
       ledPrintln( distanceStr);
   }
