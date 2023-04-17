@@ -26,17 +26,18 @@ const uint32_t LoopDelayMs = 250;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
+const unsigned long RebootIntervalMs = 45 * 60 * 1000; // Add a constant for the 45-minute interval
+  static unsigned long rebootIfNeededTime = 0;         // Rename the variable to rebootIfNeededTime
+
 void rebootIfNeeded(bool force) {
-  if( !force ) {
-    tm* dateTime = getDateTimeNow();
+  if (rebootIfNeededTime == 0) {
+    rebootIfNeededTime = millis(); // Store the time when the function is called for the first time
+  }
 
-    int hours = dateTime->tm_hour;
-    int minutes = dateTime->tm_min;
-    int seconds = dateTime->tm_sec;
-
-    // Return early if it's not 4:00 AM
-    if (!(hours == 4 && minutes == 0 && seconds == 0) ) {
-      return;
+  if (!force) {
+    // Check if 45 minutes have elapsed since the rebootIfNeededTime
+    if (millis() - rebootIfNeededTime < RebootIntervalMs) {
+      return; // If 45 minutes haven't passed, return early without rebooting
     }
   }
 
@@ -172,19 +173,22 @@ void loop()
   M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
 
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
-    // Clear the LED periodically to see if we can recover from the display getting confused.
-    //if (millis() - lastLedClearTime >= LedClearIntervalMs) {
-    //  ledClear(); // Clear the LED display
-    //  lastLedClearTime = millis(); // Update the last time ledClear() was called
-    //}
+    rebootIfNeeded(false);
 
-    //struct tm* dateTimeNow = getDateTimeNow();
-    //char currentTimeStr[16];
-    //strftime(currentTimeStr, sizeof(currentTimeStr), dateTimeNow->tm_sec % 2 == 0 ? "%I:%M" : "%I %M", dateTimeNow);
-    //strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
-    //ledPrintln( currentTimeStr );
+    // Clear the LED periodically to see if we can recover from the display getting confused.
+    if (millis() - lastLedClearTime >= LedClearIntervalMs) {
+      ledClear(); // Clear the LED display
+      lastLedClearTime = millis(); // Update the last time ledClear() was called
+    }
+
+    struct tm* dateTimeNow = getDateTimeNow();
+    char currentTimeStr[16];
+    strftime(currentTimeStr, sizeof(currentTimeStr), dateTimeNow->tm_sec % 2 == 0 ? "%I:%M" : "%I %M", dateTimeNow);
+    strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
+    ledPrintln( currentTimeStr );
   } else {
       ledPrintln( distanceStr);
+      rebootIfNeededTime = 0;    // Reset our 45 minute reboot time as we are showing the distance and we don't want to reboot during that!
   }
   
   M5.Lcd.setTextColor(TextColor, BackgroundColor);
@@ -194,8 +198,6 @@ void loop()
     delay(LoopDelayMs);
 
   delay(LoopDelayMs); // Wait for a second before sending the next message
-
-  rebootIfNeeded(false);
 }
 
 
