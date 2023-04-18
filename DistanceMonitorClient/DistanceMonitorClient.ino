@@ -19,7 +19,7 @@ const unsigned long SerialPortBaudRate = 115200;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
 
-const float MaxDistanceToShowStop = 0.9;
+const float MaxDistanceToShowStop = 1.0;
 
 const uint32_t LoopDelayMs = 250;
 
