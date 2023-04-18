@@ -176,10 +176,10 @@ void loop()
     rebootIfNeeded(false);
 
     // Clear the LED periodically to see if we can recover from the display getting confused.
-    if (millis() - lastLedClearTime >= LedClearIntervalMs) {
-      ledClear(); // Clear the LED display
-      lastLedClearTime = millis(); // Update the last time ledClear() was called
-    }
+    //if (millis() - lastLedClearTime >= LedClearIntervalMs) {
+    //  ledClear(); // Clear the LED display
+    //  lastLedClearTime = millis(); // Update the last time ledClear() was called
+    //}
 
     struct tm* dateTimeNow = getDateTimeNow();
     char currentTimeStr[16];
