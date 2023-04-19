@@ -8,11 +8,13 @@ const uint32_t TextColor = GREEN;
 const uint8_t  TextSizeBase = 8;
 const uint8_t  TextSize = 3;
 const uint8_t  TextSizeBig = TextSize + 1;
-const uint8_t  ScreenRotation90Degrees = 1;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
-const uint8_t  ScreenRotation270Degrees = 3;              // // 0 (normal orientation), 1 (90 degrees clockwise), 2 (180 degrees), or 3 (90 degrees counterclockwise)
+const uint8_t  ScreenRotation90Degrees = 1;
+const uint8_t  ScreenRotation270Degrees = 3;
 const unsigned long SerialPortBaudRate = 115200;
 
 const uint32_t LoopDelayMs = 250;
+
+UtilBleScanner bleScanner;
 
 void setup() {
   M5.begin();
@@ -24,14 +26,18 @@ void setup() {
   M5.Lcd.setTextSize(TextSize);
 
   Serial.begin(SerialPortBaudRate);
-  bleBeginClient();
+  Serial.println("Starting Scanner");
+
+  bleScanner.beginClient();
 }
 
 void loop() {
-  M5.Lcd.setCursor(0, TextSize*TextSizeBase*0);
+  M5.update();
+
+  M5.Lcd.setCursor(0, TextSize * TextSizeBase * 0);
   M5.Lcd.print("Scanning...");  clearToEndOfLine();
   
-  bleFindDevices();
+  bleScanner.findDevices();
 
   delay(LoopDelayMs); // Wait for a second before sending the next message
 }

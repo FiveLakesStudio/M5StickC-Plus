@@ -1,11 +1,28 @@
-#ifndef UTIL_BLE_CLIENT_H
-#define UTIL_BLE_CLIENT_H
+#ifndef UTIL_BLE_SCANNER_H
+#define UTIL_BLE_SCANNER_H
 
-//extern float gDistance;
+#include <M5StickCPlus.h>
+#include <NimBLEDevice.h>
+#include <NimBLEAdvertisedDevice.h>
 
-void bleBeginClient();
-bool bleFindDevices();
+class UtilBleScanner {
+private:
+  const int bleScanTimeSeconds;
 
-#endif
+  NimBLEScan* pScan;
+  NimBLEAdvertisedDevice* foundDevice;
 
+  class MyAdvertisedDeviceCallbacks : public NimBLEAdvertisedDeviceCallbacks {
+    UtilBleScanner* parent;
+  public:
+    MyAdvertisedDeviceCallbacks(UtilBleScanner* pParent) : parent(pParent) {}
+    void onResult(NimBLEAdvertisedDevice* advertisedDevice);
+  };
 
+public:
+  UtilBleScanner();
+  bool findDevices();
+  void beginClient();
+};
+
+#endif // UTIL_BLE_SCANNER_H
