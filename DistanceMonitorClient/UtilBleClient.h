@@ -17,6 +17,7 @@ class UtilBleClient {
 
   public:
     std::string getDeviceName(); // Add this method declaration
+    float lastReadFloatValue;
 
     UtilBleClient(const std::string& macAddress);
     void begin();

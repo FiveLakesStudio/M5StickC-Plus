@@ -20,6 +20,7 @@ const int BufferSize = 7;
 const float InvalidFixedPointValue = -1.0;
 
 UtilBleClient::UtilBleClient(const std::string& macAddress) : deviceMacAddress(macAddress) {
+  lastReadFloatValue = InvalidFixedPointValue;
 }
 
 std::string UtilBleClient::getDeviceName() {
@@ -32,13 +33,14 @@ std::string UtilBleClient::getDeviceName() {
   }
 }
 
-
 bool UtilBleClient::connectToDeviceIfNeeded() {
   if (pClient != nullptr && pClient->isConnected())
     return true;
 
   Serial.print("BLE Trying to Connect to "); Serial.println(deviceMacAddress.c_str());
   pClient = NimBLEDevice::createClient(NimBLEAddress(deviceMacAddress));
+
+  pClient->setConnectTimeout(1);
 
   if (!pClient->connect(NimBLEAddress(deviceMacAddress))) {
     Serial.println("BLE Failed to connect! ");
@@ -64,27 +66,40 @@ bool UtilBleClient::connectToDeviceIfNeeded() {
   return true;
 }
 
+static bool _isBleInit = false;
+
 void UtilBleClient::begin() {
-  NimBLEDevice::init("");
+  if( !_isBleInit ) {
+    NimBLEDevice::init("");
+    _isBleInit = true;
+  }
 
   connectToDeviceIfNeeded();
 }
 
 float UtilBleClient::readFloatValue() {
-  if( !connectToDeviceIfNeeded() )
-    return -1.0;
+  if (!connectToDeviceIfNeeded()) {
+    lastReadFloatValue = InvalidFixedPointValue;
+    return InvalidFixedPointValue;
+  }
 
-  if (pRemoteCharacteristic == nullptr || !pRemoteCharacteristic->canRead()) 
-    return -1.0;
+  if (pRemoteCharacteristic == nullptr || !pRemoteCharacteristic->canRead()) {
+    lastReadFloatValue = InvalidFixedPointValue;
+    return InvalidFixedPointValue;
+  }
 
   std::string value = pRemoteCharacteristic->readValue();
   uint8_t* pData = (uint8_t*)value.data();
   size_t length = value.length();
 
-  if( length != BufferSize )
-     return -1.0;
+  if (length != BufferSize) {
+    lastReadFloatValue = InvalidFixedPointValue;
+    return InvalidFixedPointValue;
+  }
 
   float floatValue = bleReadFloatFromFixed16x8(pData);
+  lastReadFloatValue = floatValue;
+  
   return floatValue;
 }
 
