@@ -27,7 +27,9 @@ const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
 const unsigned long RebootIntervalMs = 45 * 60 * 1000; // Add a constant for the 45-minute interval
-  static unsigned long rebootIfNeededTime = 0;         // Rename the variable to rebootIfNeededTime
+static unsigned long rebootIfNeededTime = 0;         // Rename the variable to rebootIfNeededTime
+
+UtilBleClient bleClient(MacAddressTesla);
 
 void rebootIfNeeded(bool force) {
   if (rebootIfNeededTime == 0) {
@@ -85,7 +87,7 @@ void setup()
 
   ledMaxBegin();
 
-  bleBeginClient();
+  bleClient.begin();
 
   M5.Lcd.println("Connecting");
   unsigned long connectStartTime = millis();
@@ -150,7 +152,7 @@ void loop()
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*3);
 
-  float distance = bleReadFloatValue();
+  float distance = bleClient.readFloatValue();
 
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)

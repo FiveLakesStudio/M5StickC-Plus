@@ -1,14 +1,23 @@
-#ifndef UTIL_BLE_CLIENT_H
-#define UTIL_BLE_CLIENT_H
+#pragma once
 
-//extern float gDistance;
+#include <NimBLEDevice.h>
+#include <NimBLEAdvertisedDevice.h>
 
-void bleBeginClient();
-float bleReadFloatValue();
+#define MacAddressRivian "e8:9f:6d:08:d4:f6"
+#define MacAddressTesla "4c:75:25:cd:ef:d2"
 
-bool bleFindAndConnectToDeviceIfNeeded();
+class UtilBleClient {
+  private:
+    NimBLEClient* pClient;
+    NimBLERemoteService* pRemoteService;
+    NimBLERemoteCharacteristic* pRemoteCharacteristic;
+    std::string deviceMacAddress;
 
-float bleReadFloatFromFixed16x8(uint8_t *byteArray);
-#endif
+    bool bleFindAndConnectToDeviceIfNeeded();
 
-
+  public:
+    UtilBleClient(const std::string& macAddress);
+    void begin();
+    float readFloatValue();
+    float bleReadFloatFromFixed16x8(uint8_t *byteArray);
+};

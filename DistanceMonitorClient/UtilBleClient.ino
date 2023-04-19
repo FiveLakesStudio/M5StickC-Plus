@@ -1,13 +1,8 @@
-#include <M5StickCPlus.h>
-#include <NimBLEDevice.h>           // https://github.com/h2zero/NimBLE-Arduino
-#include <NimBLEAdvertisedDevice.h>
 #include "UtilBleClient.h"
+#include <M5StickCPlus.h>
 
 #define SERVICE_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
 #define CHARACTERISTIC_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f01"
-
-//const char* fixedMacAddress = "e8:9f:6d:08:d4:f6";
-const char* fixedMacAddress = "4c:75:25:cd:ef:d2";
 
 const uint8_t BleBufferMarkerStart = 0xAB;
 const uint8_t BleBufferMarkerEnd = 0xEF;
@@ -24,25 +19,21 @@ const int BufferSize = 7;
 
 const float InvalidFixedPointValue = -1.0;
 
-const int bleScanTimeSeconds = 5; //In seconds
+UtilBleClient::UtilBleClient(const std::string& macAddress) : deviceMacAddress(macAddress) {
+}
 
-NimBLEClient* pClient = nullptr;
-NimBLERemoteService* pRemoteService = nullptr;
-NimBLERemoteCharacteristic* pRemoteCharacteristic = nullptr;
-
-bool bleFindAndConnectToDeviceIfNeeded() {
+bool UtilBleClient::bleFindAndConnectToDeviceIfNeeded() {
   if (pClient != nullptr && pClient->isConnected())
     return true;
 
-  Serial.print("BLE Trying to Connect to "); Serial.println(fixedMacAddress);
-  pClient = NimBLEDevice::createClient(NimBLEAddress(fixedMacAddress));
+  Serial.print("BLE Trying to Connect to "); Serial.println(deviceMacAddress.c_str());
+  pClient = NimBLEDevice::createClient(NimBLEAddress(deviceMacAddress));
 
-  if (!pClient->connect(NimBLEAddress(fixedMacAddress))) {
-    Serial.print("BLE Failed to connect! "); Serial.println(fixedMacAddress);
+  if (!pClient->connect(NimBLEAddress(deviceMacAddress))) {
+    Serial.println("BLE Failed to connect! ");
     return false;
   }
 
-  Serial.println("BLE Connected!"); Serial.println(fixedMacAddress);
   pRemoteService = pClient->getService(NimBLEUUID(SERVICE_UUID));
   if (pRemoteService == nullptr) {
     Serial.println("Failed to find the service!");
@@ -57,18 +48,18 @@ bool bleFindAndConnectToDeviceIfNeeded() {
     return false;
   }
 
+  Serial.println("BLE Connected!");
+
   return true;
 }
 
-void bleBeginClient() 
-{
+void UtilBleClient::begin() {
   NimBLEDevice::init("");
 
   bleFindAndConnectToDeviceIfNeeded();
 }
 
-float bleReadFloatValue() 
-{
+float UtilBleClient::readFloatValue() {
   if( !bleFindAndConnectToDeviceIfNeeded() )
     return -1.0;
 
@@ -86,7 +77,7 @@ float bleReadFloatValue()
   return floatValue;
 }
 
-float bleReadFloatFromFixed16x8(uint8_t *byteArray) {
+float UtilBleClient::bleReadFloatFromFixed16x8(uint8_t *byteArray) {
   // Verify the start marker
   if (byteArray[MarkerStartIndex] != BleBufferMarkerStart) {
     return InvalidFixedPointValue;
