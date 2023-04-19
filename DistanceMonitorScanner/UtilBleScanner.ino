@@ -1,7 +1,7 @@
 #include "UtilBleScanner.h"
 
 #define SERVICE_UUID_RIVIAN "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
-#define SERVICE_UUID_TESLA "12345678-90ab-cdef-1234-567890abcdef"
+#define SERVICE_UUID_TESLA  "f5b13a29-196a-4b42-bffa-85c6e44c7000"
 
 void UtilBleScanner::MyAdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevice* advertisedDevice) {
   if (advertisedDevice->isAdvertisingService(NimBLEUUID(SERVICE_UUID_RIVIAN))) {
