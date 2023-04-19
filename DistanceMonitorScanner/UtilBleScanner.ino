@@ -1,27 +1,35 @@
 #include "UtilBleScanner.h"
 
-#define SERVICE_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
+#define SERVICE_UUID_RIVIAN "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
+#define SERVICE_UUID_TESLA "12345678-90ab-cdef-1234-567890abcdef"
 
 void UtilBleScanner::MyAdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevice* advertisedDevice) {
-  if (advertisedDevice->isAdvertisingService(NimBLEUUID(SERVICE_UUID))) {
-    Serial.print("Found Device: ");
+  if (advertisedDevice->isAdvertisingService(NimBLEUUID(SERVICE_UUID_RIVIAN))) {
+    Serial.print("Found Rivian Device: ");
     Serial.print(advertisedDevice->getAddress().toString().c_str());
     Serial.print(" RSSI: ");
     Serial.println(advertisedDevice->getRSSI());
 
-    parent->foundDevices.push_back(new NimBLEAdvertisedDevice(*advertisedDevice));
+    parent->foundDeviceRivian = new NimBLEAdvertisedDevice(*advertisedDevice);
+  } else if (advertisedDevice->isAdvertisingService(NimBLEUUID(SERVICE_UUID_TESLA))) {
+    Serial.print("Found Tesla Device: ");
+    Serial.print(advertisedDevice->getAddress().toString().c_str());
+    Serial.print(" RSSI: ");
+    Serial.println(advertisedDevice->getRSSI());
+
+    parent->foundDeviceTesla = new NimBLEAdvertisedDevice(*advertisedDevice);
   }
 }
 
-UtilBleScanner::UtilBleScanner() : bleScanTimeSeconds(10) {
+UtilBleScanner::UtilBleScanner() : bleScanTimeSeconds(10), foundDeviceRivian(nullptr), foundDeviceTesla(nullptr) {
 }
 
 bool UtilBleScanner::findDevices() {
-  if (foundDevices.empty()) {
+  if (foundDeviceRivian == nullptr && foundDeviceTesla == nullptr) {
     if (pScan->isScanning())
       return false;
 
-    Serial.println("Scanning for devices with service UUID ...");
+    Serial.println("Scanning for devices with Rivian and Tesla service UUIDs ...");
     pScan->start(bleScanTimeSeconds, nullptr, true);
 
     return false;
