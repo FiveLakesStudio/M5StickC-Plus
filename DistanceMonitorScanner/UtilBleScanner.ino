@@ -9,7 +9,7 @@ void UtilBleScanner::MyAdvertisedDeviceCallbacks::onResult(NimBLEAdvertisedDevic
     Serial.print(" RSSI: ");
     Serial.println(advertisedDevice->getRSSI());
 
-    parent->foundDevice = new NimBLEAdvertisedDevice(*advertisedDevice);
+    parent->foundDevices.push_back(new NimBLEAdvertisedDevice(*advertisedDevice));
   }
 }
 
@@ -17,7 +17,7 @@ UtilBleScanner::UtilBleScanner() : bleScanTimeSeconds(10) {
 }
 
 bool UtilBleScanner::findDevices() {
-  if (foundDevice == nullptr) {
+  if (foundDevices.empty()) {
     if (pScan->isScanning())
       return false;
 

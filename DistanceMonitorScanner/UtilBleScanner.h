@@ -4,13 +4,14 @@
 #include <M5StickCPlus.h>
 #include <NimBLEDevice.h>
 #include <NimBLEAdvertisedDevice.h>
+#include <vector>
 
 class UtilBleScanner {
 private:
   const int bleScanTimeSeconds;
 
   NimBLEScan* pScan;
-  NimBLEAdvertisedDevice* foundDevice;
+  std::vector<NimBLEAdvertisedDevice*> foundDevices;
 
   class MyAdvertisedDeviceCallbacks : public NimBLEAdvertisedDeviceCallbacks {
     UtilBleScanner* parent;
