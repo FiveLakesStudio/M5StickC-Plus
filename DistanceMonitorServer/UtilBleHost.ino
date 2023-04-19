@@ -26,7 +26,7 @@ const float InvalidFixedPointValue = -1.0;
 
 void bleBeginHost() 
 {
-  NimBLEDevice::init("FLS_DM_TESLA");
+  NimBLEDevice::init("FLS_DM");
   
   pServer = NimBLEDevice::createServer();
   
