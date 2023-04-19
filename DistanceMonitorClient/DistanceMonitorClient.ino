@@ -150,12 +150,23 @@ void loop()
   lcdPrintDateIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
-  M5.Lcd.print(bleClientTesla.getDeviceName().c_str());
   clearToEndOfLine();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*3);
 
-  float distance = bleClientTesla.readFloatValue();
+  float distanceRivianLastRead = bleClientRivian.lastReadFloatValue;
+  float distanceTeslaLastRead = bleClientTesla.lastReadFloatValue;
+  float distanceRivian = bleClientRivian.readFloatValue();
+  float distanceTesla = bleClientTesla.readFloatValue();
+  float distance = -1;
+  char *distanceUsingStr = "";
+  if(distanceRivian != -1 && distanceRivian != distanceRivianLastRead) {
+    distance = distanceRivian;
+    distanceUsingStr = "R";
+  } else if(distanceTesla != -1 && distanceTesla != distanceTeslaLastRead){
+    distance = distanceTesla;
+    distanceUsingStr = "T";
+  }
 
   char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
   if(distance == UltrasonicSensorUnknownDistance)
@@ -175,7 +186,7 @@ void loop()
 
   M5.Lcd.setTextSize(TextSizeBig);
   M5.Lcd.setTextColor(BLUE, BackgroundColor);
-  M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
+  M5.Lcd.print(distanceUsingStr); M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
 
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
     rebootIfNeeded(false);
