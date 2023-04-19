@@ -22,7 +22,18 @@ const float InvalidFixedPointValue = -1.0;
 UtilBleClient::UtilBleClient(const std::string& macAddress) : deviceMacAddress(macAddress) {
 }
 
-bool UtilBleClient::bleFindAndConnectToDeviceIfNeeded() {
+std::string UtilBleClient::getDeviceName() {
+  if (deviceMacAddress == MacAddressTesla) {
+    return "Tesla Client";
+  } else if (deviceMacAddress == MacAddressRivian) {
+    return "Rivian Client";
+  } else {
+    return "Unknown Client";
+  }
+}
+
+
+bool UtilBleClient::connectToDeviceIfNeeded() {
   if (pClient != nullptr && pClient->isConnected())
     return true;
 
@@ -56,11 +67,11 @@ bool UtilBleClient::bleFindAndConnectToDeviceIfNeeded() {
 void UtilBleClient::begin() {
   NimBLEDevice::init("");
 
-  bleFindAndConnectToDeviceIfNeeded();
+  connectToDeviceIfNeeded();
 }
 
 float UtilBleClient::readFloatValue() {
-  if( !bleFindAndConnectToDeviceIfNeeded() )
+  if( !connectToDeviceIfNeeded() )
     return -1.0;
 
   if (pRemoteCharacteristic == nullptr || !pRemoteCharacteristic->canRead()) 

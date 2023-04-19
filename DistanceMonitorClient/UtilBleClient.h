@@ -13,9 +13,11 @@ class UtilBleClient {
     NimBLERemoteCharacteristic* pRemoteCharacteristic;
     std::string deviceMacAddress;
 
-    bool bleFindAndConnectToDeviceIfNeeded();
+    bool connectToDeviceIfNeeded();
 
   public:
+    std::string getDeviceName(); // Add this method declaration
+
     UtilBleClient(const std::string& macAddress);
     void begin();
     float readFloatValue();

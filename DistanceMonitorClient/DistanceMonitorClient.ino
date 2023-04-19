@@ -148,6 +148,7 @@ void loop()
   lcdPrintDateIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
+  M5.Lcd.print(bleClient.getDeviceName().c_str());
   clearToEndOfLine();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*3);
