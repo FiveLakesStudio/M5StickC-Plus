@@ -47,7 +47,7 @@ void loop() {
   }
 
   if (bleScanner.foundDeviceTesla != nullptr) {
-    M5.Lcd.setCursor(0, TextSize * TextSizeBase * 2);
+    M5.Lcd.setCursor(0, TextSize * TextSizeBase * 3);
     M5.Lcd.print("Tesla: ");
     M5.Lcd.print(bleScanner.foundDeviceTesla->getAddress().toString().c_str());
     clearToEndOfLine();
