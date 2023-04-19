@@ -2,13 +2,8 @@
 #include <NimBLEDevice.h>  // https://github.com/h2zero/NimBLE-Arduino
 #include "UtilBleHost.h"
 
-#define SERVICE_UUID_RIVIAN "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
-#define SERVICE_UUID_TESLA  "f5b13a29-196a-4b42-bffa-85c6e44c7000"
-
-#define SERVICE_UUID SERVICE_UUID_TESLA
+#define SERVICE_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f00"
 #define CHARACTERISTIC_UUID "f5b13a29-196a-4b42-bffa-85c6e44c6f01"
-
-
 
 NimBLEServer* pServer;
 NimBLEService* pService;
@@ -31,7 +26,7 @@ const float InvalidFixedPointValue = -1.0;
 
 void bleBeginHost() 
 {
-  NimBLEDevice::init("FLS_USS");
+  NimBLEDevice::init("FLS_DM_TESLA");
   
   pServer = NimBLEDevice::createServer();
   
