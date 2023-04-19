@@ -24,11 +24,14 @@ void setup() {
   M5.Lcd.setTextSize(TextSize);
 
   Serial.begin(SerialPortBaudRate);
+  bleBeginClient();
 }
 
 void loop() {
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*0);
   M5.Lcd.print("Scanning...");  clearToEndOfLine();
   
+  bleFindDevices();
+
   delay(LoopDelayMs); // Wait for a second before sending the next message
 }
