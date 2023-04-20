@@ -22,7 +22,7 @@ const unsigned long ConnectionRetryMs = 500;
 const float differenceThreshold = 0.1;
 
 const float MaxDistanceToShowStopRivian = 1.0;
-const float MaxDistanceToShowStopTesla = 0.0;
+const float MaxDistanceToShowStopTesla = 2.0;
 
 const uint32_t LoopDelayMs = 10;
 
