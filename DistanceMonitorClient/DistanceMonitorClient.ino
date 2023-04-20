@@ -35,6 +35,14 @@ static unsigned long rebootIfNeededTime = 0;         // Rename the variable to r
 UtilBleClient bleClientRivian(MacAddressRivian);
 UtilBleClient bleClientTesla(MacAddressTesla);
 
+enum DistanceToShow {
+  Any,
+  Rivian,
+  Tesla
+};
+
+DistanceToShow distanceToShow = Any;  // set initial value
+
 void rebootIfNeeded(bool force) {
   if (rebootIfNeededTime == 0) {
     rebootIfNeededTime = millis(); // Store the time when the function is called for the first time
@@ -168,23 +176,46 @@ void loop()
 
   float distanceRivianLastRead = bleClientRivian.lastReadFloatValue;
   float distanceTeslaLastRead = bleClientTesla.lastReadFloatValue;
-  float distanceRivian = bleClientRivian.readFloatValue();
-  float distanceTesla = bleClientTesla.readFloatValue();
+  float distanceRivian = distanceRivianLastRead;
+  float distanceTesla = distanceTeslaLastRead;
+
+  if( distanceToShow == DistanceToShow::Rivian || distanceToShow == DistanceToShow::Any) {
+    distanceRivian = bleClientRivian.readFloatValue();
+  }
+
+  if( distanceToShow == DistanceToShow::Tesla || distanceToShow == DistanceToShow::Any) {
+    distanceTesla = bleClientTesla.readFloatValue();
+  }
+
   float distance = -1;
   char *distanceUsingStr = "";
   float maxDistanceToShowStop = -1;
+  
   if(isDistanceSignificantlyDifferent(distanceRivian, distanceRivianLastRead, differenceThreshold)) {
-    distance = distanceRivian;
-    maxDistanceToShowStop = MaxDistanceToShowStopRivian;
-    distanceUsingStr = "R";
-    Serial.print("Rivian: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceRivianLastRead); Serial.print(" "); Serial.println("");
+    distanceToShow = DistanceToShow::Rivian;
   } else if(isDistanceSignificantlyDifferent(distanceTesla, distanceTeslaLastRead, differenceThreshold)){
-    distance = distanceTesla;
-    maxDistanceToShowStop = MaxDistanceToShowStopTesla;
-    distanceUsingStr = "T";
-    Serial.print("Tesla: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceTeslaLastRead); Serial.print(" "); Serial.println("");
-  } else {
-    Serial.print("None: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceRivian); Serial.print(" "); Serial.print(distanceTesla); Serial.print(""); Serial.println("");
+    distanceToShow = DistanceToShow::Tesla;
+  }
+
+  switch (distanceToShow) {
+    case Any:
+      distanceUsingStr = "*";
+      Serial.print("None: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceRivian); Serial.print(" "); Serial.print(distanceTesla); Serial.print(""); Serial.println("");
+      break;
+
+    case Rivian:
+      distanceUsingStr = "R";
+      distance = distanceRivian;
+      maxDistanceToShowStop = MaxDistanceToShowStopRivian;
+      Serial.print("Rivian: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceRivianLastRead); Serial.print(" "); Serial.println("");
+      break;
+
+    case Tesla:
+      distanceUsingStr = "T";
+      distance = distanceTesla;
+      maxDistanceToShowStop = MaxDistanceToShowStopTesla;
+      Serial.print("Tesla: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceTeslaLastRead); Serial.print(" "); Serial.println("");
+      break;
   }
 
   char distanceStr[14]; // Allocate a buffer to hold the formatted distance string
@@ -221,6 +252,8 @@ void loop()
     strftime(currentTimeStr, sizeof(currentTimeStr), dateTimeNow->tm_sec % 2 == 0 ? "%I:%M" : "%I %M", dateTimeNow);
     strcat(currentTimeStr, dateTimeNow->tm_hour >= 12 ? "P" : "A");
     ledPrintln( currentTimeStr );
+
+    distanceToShow = DistanceToShow::Any;
   } else {
       ledPrintln( distanceStr);
       rebootIfNeededTime = 0;    // Reset our 45 minute reboot time as we are showing the distance and we don't want to reboot during that!
