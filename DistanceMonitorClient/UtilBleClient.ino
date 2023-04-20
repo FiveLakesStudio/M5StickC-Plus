@@ -37,31 +37,31 @@ bool UtilBleClient::connectToDeviceIfNeeded() {
   if (pClient != nullptr && pClient->isConnected())
     return true;
 
-  Serial.print("BLE Trying to Connect to "); Serial.println(deviceMacAddress.c_str());
+  //Serial.print("BLE Trying to Connect to "); Serial.println(deviceMacAddress.c_str());
   pClient = NimBLEDevice::createClient(NimBLEAddress(deviceMacAddress));
 
   pClient->setConnectTimeout(1);
 
   if (!pClient->connect(NimBLEAddress(deviceMacAddress))) {
-    Serial.println("BLE Failed to connect! ");
+    //Serial.println("BLE Failed to connect! ");
     return false;
   }
 
   pRemoteService = pClient->getService(NimBLEUUID(SERVICE_UUID));
   if (pRemoteService == nullptr) {
-    Serial.println("Failed to find the service!");
+    //Serial.println("Failed to find the service!");
     pClient->disconnect();
     return false;
   }
 
   pRemoteCharacteristic = pRemoteService->getCharacteristic(NimBLEUUID(CHARACTERISTIC_UUID));
   if (pRemoteCharacteristic == nullptr) {
-    Serial.println("Failed to find the characteristic!");
+    //Serial.println("Failed to find the characteristic!");
     pClient->disconnect();
     return false;
   }
 
-  Serial.println("BLE Connected!");
+  Serial.print("BLE Connected "); Serial.println(deviceMacAddress.c_str());
 
   return true;
 }
@@ -83,8 +83,10 @@ float UtilBleClient::readFloatValue() {
     return InvalidFixedPointValue;
   }
 
-  if (pRemoteCharacteristic == nullptr || !pRemoteCharacteristic->canRead()) {
+  bool canRead = pRemoteCharacteristic->canRead();
+  if (pRemoteCharacteristic == nullptr || !canRead) {
     lastReadFloatValue = InvalidFixedPointValue;
+    Serial.println( canRead ? "Characteristic Invalid" : "Characteristic can't be read");
     return InvalidFixedPointValue;
   }
 
@@ -94,6 +96,7 @@ float UtilBleClient::readFloatValue() {
 
   if (length != BufferSize) {
     lastReadFloatValue = InvalidFixedPointValue;
+    Serial.println("Characteristic buffer size doesn't match expected size");
     return InvalidFixedPointValue;
   }
 

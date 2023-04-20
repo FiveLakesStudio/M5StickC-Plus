@@ -19,7 +19,10 @@ const unsigned long SerialPortBaudRate = 115200;
 const unsigned long ConnectionTimeoutMs = 10 * 1000;
 const unsigned long ConnectionRetryMs = 500;
 
-const float MaxDistanceToShowStop = 1.0;
+const float differenceThreshold = 0.1;
+
+const float MaxDistanceToShowStopRivian = 1.0;
+const float MaxDistanceToShowStopTesla = 0.0;
 
 const uint32_t LoopDelayMs = 250;
 
@@ -130,6 +133,13 @@ unsigned long lastDistanceChangeTime = 0;
 const unsigned long LedClearIntervalMs = 10 * 1000; // 10 seconds
 unsigned long lastLedClearTime = 0;
 
+bool isDistanceSignificantlyDifferent(float currentDistance, float lastReadDistance, float threshold) {
+  if (currentDistance == -1) {
+    return false;
+  }
+  return abs(currentDistance - lastReadDistance) > threshold;
+}
+
 void loop() 
 { 
   M5.update();
@@ -160,33 +170,40 @@ void loop()
   float distanceTesla = bleClientTesla.readFloatValue();
   float distance = -1;
   char *distanceUsingStr = "";
-  if(distanceRivian != -1 && distanceRivian != distanceRivianLastRead) {
+  float maxDistanceToShowStop = -1;
+  if(isDistanceSignificantlyDifferent(distanceRivian, distanceRivianLastRead, differenceThreshold)) {
     distance = distanceRivian;
+    maxDistanceToShowStop = MaxDistanceToShowStopRivian;
     distanceUsingStr = "R";
-  } else if(distanceTesla != -1 && distanceTesla != distanceTeslaLastRead){
+    Serial.print("Rivian: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceRivianLastRead); Serial.print(" "); Serial.println("");
+  } else if(isDistanceSignificantlyDifferent(distanceTesla, distanceTeslaLastRead, differenceThreshold)){
     distance = distanceTesla;
+    maxDistanceToShowStop = MaxDistanceToShowStopTesla;
     distanceUsingStr = "T";
+    Serial.print("Tesla: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceTeslaLastRead); Serial.print(" "); Serial.println("");
+  } else {
+    Serial.print("None: ");  Serial.print(distance); Serial.print(" "); Serial.print(distanceRivian); Serial.print(" "); Serial.print(distanceTesla); Serial.print(""); Serial.println("");
   }
 
-  char distanceStr[10]; // Allocate a buffer to hold the formatted distance string
-  if(distance == UltrasonicSensorUnknownDistance)
-     strcpy(distanceStr, "  -.--"); 
-  else if(distance < MaxDistanceToShowStop) {
-    strncpy(distanceStr, "STOP", sizeof(distanceStr));
+  char distanceStr[14]; // Allocate a buffer to hold the formatted distance string
+  if(distance == UltrasonicSensorUnknownDistance || maxDistanceToShowStop == -1)
+     strcpy(distanceStr, "  None"); 
+  else if(distance < maxDistanceToShowStop) {
+    strncpy(distanceStr, " STOP", sizeof(distanceStr));
     distanceStr[sizeof(distanceStr) - 1] = '\0'; // Ensure null termination
   } else {
-    dtostrf(distance - MaxDistanceToShowStop, 5, 1, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
+    dtostrf(distance - maxDistanceToShowStop, 5, 1, distanceStr); // Convert distance to a string with 6 total characters and 2 decimal places
+    strcat(distanceStr, "'"); // Append "ft" to the string
   }
- 
-  const float differenceThreshold = 0.1;
-  if (abs(distance - previousDistance) >= differenceThreshold) {
+  
+  if (isDistanceSignificantlyDifferent(distance, previousDistance, differenceThreshold)) {
     previousDistance = distance;
     lastDistanceChangeTime = millis();
   }
 
   M5.Lcd.setTextSize(TextSizeBig);
   M5.Lcd.setTextColor(BLUE, BackgroundColor);
-  M5.Lcd.print(distanceUsingStr); M5.Lcd.print(distanceStr);  M5.Lcd.print("ft"); clearToEndOfLine();
+  M5.Lcd.print(distanceUsingStr); M5.Lcd.print(distanceStr); clearToEndOfLine();
 
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
     rebootIfNeeded(false);
