@@ -143,3 +143,9 @@ float UtilBleClient::bleReadFloatFromFixed16x8(uint8_t *byteArray) {
 
   return floatValue;
 }
+
+bool UtilBleClient::isConnected() {
+  return pClient->isConnected() && pRemoteCharacteristic != nullptr && pRemoteCharacteristic->canRead();
+}
+
+

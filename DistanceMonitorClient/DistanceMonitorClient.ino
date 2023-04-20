@@ -24,7 +24,7 @@ const float differenceThreshold = 0.1;
 const float MaxDistanceToShowStopRivian = 1.0;
 const float MaxDistanceToShowStopTesla = 0.0;
 
-const uint32_t LoopDelayMs = 250;
+const uint32_t LoopDelayMs = 10;
 
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
@@ -160,6 +160,8 @@ void loop()
   lcdPrintDateIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
+  M5.Lcd.print(bleClientRivian.isConnected() ? "Rivian/" : "None/");
+  M5.Lcd.print(bleClientTesla.isConnected() ? "Tesla" : "None");
   clearToEndOfLine();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*3);

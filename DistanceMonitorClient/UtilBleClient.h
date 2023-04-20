@@ -1,6 +1,6 @@
 #pragma once
 
-#include <NimBLEDevice.h>
+#include <NimBLEDevice.h>             // https://github.com/h2zero/NimBLE-Arduino
 #include <NimBLEAdvertisedDevice.h>
 
 #define MacAddressRivian "e8:9f:6d:08:d4:f6"
@@ -18,6 +18,8 @@ class UtilBleClient {
   public:
     std::string getDeviceName(); // Add this method declaration
     float lastReadFloatValue;
+
+    bool isConnected();
 
     UtilBleClient(const std::string& macAddress);
     void begin();
