@@ -90,3 +90,17 @@ void bleWriteFloatAsFixed16x8(float value) {
 void bleWriteData(byte *data, size_t length) {
   pCharacteristic->setValue(data, length);
 }
+
+const char* bleGetName() {
+  NimBLEAddress localAddress = NimBLEDevice::getAddress();
+  String localAddressStr = localAddress.toString().c_str();
+
+  if (localAddressStr.equals(MacAddressRivian)) {
+    return "Rivian";
+  } else if (localAddressStr.equals(MacAddressTesla)) {
+    return "Tesla";
+  } else {
+    return "Unknown";
+  }
+}
+

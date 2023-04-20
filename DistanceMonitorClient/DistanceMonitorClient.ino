@@ -29,7 +29,7 @@ const char* WifiPassword = "ivacivac";
 const unsigned long RebootIntervalMs = 45 * 60 * 1000; // Add a constant for the 45-minute interval
 static unsigned long rebootIfNeededTime = 0;         // Rename the variable to rebootIfNeededTime
 
-UtilBleClient bleClientRivian(MacAddressTesla);
+UtilBleClient bleClientRivian(MacAddressRivian);
 UtilBleClient bleClientTesla(MacAddressTesla);
 
 void rebootIfNeeded(bool force) {

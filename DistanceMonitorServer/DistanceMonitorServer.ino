@@ -138,7 +138,7 @@ void loop()
   char* dateStr = lcdPrintDateIfNeeded();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*2);
-  clearToEndOfLine();
+  M5.Lcd.print(bleGetName());  clearToEndOfLine();
 
   M5.Lcd.setCursor(0, TextSize*TextSizeBase*3);
 
