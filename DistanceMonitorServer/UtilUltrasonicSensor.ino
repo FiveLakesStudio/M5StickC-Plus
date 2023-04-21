@@ -3,26 +3,27 @@
 
 float GetDistanceFeetAverage(uint8_t numSamples)
 {
-  float sum = 0;
-  int numSamplesTaken = 0;
   float distance = UltrasonicSensorUnknownDistance;
   float neighborDifferenceThreshold = 0.4;
 
   float samples[numSamples];
+  uint8_t samplesCount = 0;
 
   // Get all samples
+  //
   for (uint8_t index = 0; index < numSamples; index++) {
-    distance = GetDistanceFeet();
-    samples[index] = distance;
+    distance = GetDistanceFeet();  
     if (distance != UltrasonicSensorUnknownDistance) {
-      numSamplesTaken += 1;
+      samples[samplesCount] = distance;
+      samplesCount += 1;
     }
     delay(UltrasonicSensorSampleDelayMs); // Add a short delay between readings
   }
 
-  // Calculate the average while excluding samples that are more than 0.4 from their neighbors
-  int validSamples = 0;
-  for (uint8_t index = 0; index < numSamples; index++) {
+  // Filter out the outliers
+  //
+  uint8_t filteredSamplesCount = 0;
+  for (uint8_t index = 0; index < samplesCount; index++) {
     bool includeSample = true;
 
     // Check the difference with the previous neighbor
@@ -32,22 +33,36 @@ float GetDistanceFeetAverage(uint8_t numSamples)
     }
 
     // Check the difference with the next neighbor
-    if (index < numSamples - 1 && samples[index + 1] != UltrasonicSensorUnknownDistance &&
+    if (index < samplesCount - 1 && samples[index + 1] != UltrasonicSensorUnknownDistance &&
         abs(samples[index] - samples[index + 1]) > neighborDifferenceThreshold) {
       includeSample = false;
     }
 
     if (includeSample && samples[index] != UltrasonicSensorUnknownDistance) {
-      sum += samples[index];
-      validSamples += 1;
+      samples[filteredSamplesCount] = samples[index];
+      filteredSamplesCount += 1;
     }
   }
 
-  if (distance == UltrasonicSensorUnknownDistance || validSamples == 0) {
+  // Make sure we still have some valid samples (and make sure we have at least half the samples being valid)
+  if (filteredSamplesCount <= numSamples / 2) {
+    Serial.print("Not enough valid samples: ");
+    Serial.print(filteredSamplesCount); Serial.print(" ");
+    Serial.print(numSamples / 2); Serial.print(" ");
+    Serial.println("");
     return UltrasonicSensorUnknownDistance;
   }
 
-  return sum / validSamples;
+  // Calculate the moving average
+  //
+  float movingAverage = 0;
+  for (uint8_t index = 0; index < filteredSamplesCount; index++) {
+    movingAverage += samples[index];
+  }
+  movingAverage /= filteredSamplesCount;
+
+
+  return movingAverage;
 }
 
 
