@@ -29,7 +29,7 @@ const uint32_t LoopDelayMs = 10;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
-const unsigned long RebootIntervalMs = 30 * 24 * 60 * 60 * 1000;  // 30 days!!!
+const unsigned long RebootIntervalMs = 24 * 60 * 60 * 1000;  // Add a constant for 24*60-minute interval
 static unsigned long rebootIfNeededTime = 0;            // Rename the variable to rebootIfNeededTime
 
 UtilBleClient bleClientRivian(MacAddressRivian);
@@ -182,7 +182,6 @@ void loop()
   char *distanceUsingStr = "";
   float maxDistanceToShowStop = -1;
 
-/* -- Disables connection --- turns us just into a clock!
   switch (distanceToShow) {
     case Any:
       distanceRivian = bleClientRivian.readFloatValue();
@@ -197,8 +196,7 @@ void loop()
       distanceTesla = bleClientTesla.readFloatValue();
       break;
   }
- */
-
+  
   // If we see a value significantly change then lock in that Vehicle until we show the time.
   // This allows for faster updating as we can focus on a single vehicle.
   //

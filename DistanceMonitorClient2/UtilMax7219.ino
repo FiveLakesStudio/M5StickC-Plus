@@ -19,7 +19,7 @@
 //
 MD_Parola mxParola = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
-unsigned long resetInterval = 10 * 60 * 1000; // 10 Minutes
+unsigned long resetInterval = 60 * 60 * 1000; // 1 hour in milliseconds
 unsigned long lastResetTime = 0;
 
 void ledMaxBegin() {
@@ -43,7 +43,7 @@ bool resetDisplayIfNeeded() {
   if (currentTime - lastResetTime < resetInterval)
     return false;
    
-  mxParola.displayReset();
+  //mxParola.displayReset();
   mxParola.setIntensity(5); // set brightness to 5 (out of 15)
   mxParola.displayClear();
   mxParola.clearWriteError();
