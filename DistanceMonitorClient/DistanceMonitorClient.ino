@@ -29,7 +29,7 @@ const uint32_t LoopDelayMs = 10;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
-const unsigned long RebootIntervalMs = 30 * 1000;  // 30 Minutes
+const unsigned long RebootIntervalMs = 30 * 60 * 1000;  // 30 Minutes
 static unsigned long rebootIfNeededTime = 0;            // Rename the variable to rebootIfNeededTime
 
 UtilBleClient bleClientRivian(MacAddressRivian);
@@ -250,7 +250,7 @@ void loop()
   M5.Lcd.print(distanceUsingStr); M5.Lcd.print(distanceStr); clearToEndOfLine();
 
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
-    rebootIfNeeded(false, true);
+    rebootIfNeeded(false, false);
 
     // Clear the LED periodically to see if we can recover from the display getting confused.
     //if (millis() - lastLedClearTime >= LedClearIntervalMs) {
