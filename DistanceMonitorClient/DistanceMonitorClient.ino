@@ -29,7 +29,7 @@ const uint32_t LoopDelayMs = 10;
 const char* WifiSsid = "AirPort";
 const char* WifiPassword = "ivacivac";
 
-const unsigned long RebootIntervalMs = 30 * 24 * 60 * 60 * 1000;  // 30 days!!!
+const unsigned long RebootIntervalMs = 30 * 1000;  // 30 Minutes
 static unsigned long rebootIfNeededTime = 0;            // Rename the variable to rebootIfNeededTime
 
 UtilBleClient bleClientRivian(MacAddressRivian);
@@ -43,44 +43,46 @@ enum DistanceToShow {
 
 DistanceToShow distanceToShow = Any;  // set initial value
 
-void rebootIfNeeded(bool force) {
+void rebootIfNeeded(bool force, bool verbose) {
   if (rebootIfNeededTime == 0) {
     rebootIfNeededTime = millis(); // Store the time when the function is called for the first time
   }
 
   if (!force) {
-    // Check if 45 minutes have elapsed since the rebootIfNeededTime
     if (millis() - rebootIfNeededTime < RebootIntervalMs) {
-      return; // If 45 minutes haven't passed, return early without rebooting
+      return;
     }
   }
 
   const int16_t textPosY = TextSize*TextSizeBase*2;
 
-  M5.Lcd.setTextColor(TextColor);
-  M5.Lcd.setTextSize(TextSize);
-    
-  M5.Lcd.fillScreen(BackgroundColor);
-  M5.Lcd.setCursor(0, textPosY);
-  M5.Lcd.println("Reboot in 3");
-  ledPrintln("Boot 3");
-  delay(1000); // Wait for a while to allow the display to update
-  M5.Lcd.setCursor(0, textPosY);
-    
-  M5.Lcd.fillScreen(BackgroundColor);
-  M5.Lcd.setCursor(0, textPosY);
-  M5.Lcd.println("Reboot in 2");
-  ledPrintln("Boot 2");
-  delay(1000); // Wait for a while to allow the display to update
-    
-  M5.Lcd.fillScreen(BackgroundColor);
-  M5.Lcd.setCursor(0, textPosY);
-  M5.Lcd.println("Reboot in 1");
-  ledPrintln("Boot 1");
-  delay(1000); // Wait for a while to allow the display to update
+  if( verbose ) {
+    M5.Lcd.setTextColor(TextColor);
+    M5.Lcd.setTextSize(TextSize);
+      
+    M5.Lcd.fillScreen(BackgroundColor);
+    M5.Lcd.setCursor(0, textPosY);
+    M5.Lcd.println("Reboot in 3");
+    ledPrintln("Boot 3");
+    delay(1000); // Wait for a while to allow the display to update
+    M5.Lcd.setCursor(0, textPosY);
+      
+    M5.Lcd.fillScreen(BackgroundColor);
+    M5.Lcd.setCursor(0, textPosY);
+    M5.Lcd.println("Reboot in 2");
+    ledPrintln("Boot 2");
+    delay(1000); // Wait for a while to allow the display to update
+      
+    M5.Lcd.fillScreen(BackgroundColor);
+    M5.Lcd.setCursor(0, textPosY);
+    M5.Lcd.println("Reboot in 1");
+    ledPrintln("Boot 1");
+    delay(1000); // Wait for a while to allow the display to update
 
-  M5.Lcd.fillScreen(RED);
-  ledPrintln("");
+    M5.Lcd.fillScreen(RED);
+    ledPrintln("");
+  }
+
   esp_restart(); // Reboot the M5StickC
 }
 
@@ -153,8 +155,8 @@ void loop()
   M5.update();
 
   // Check if button A is pressed
-  if (M5.BtnA.wasReleasefor(500)) {
-    rebootIfNeeded(true);
+  if (M5.BtnA.pressedFor(500)) {
+    rebootIfNeeded(true, true);
   }
 
   bool ledAnimate();
@@ -182,7 +184,6 @@ void loop()
   char *distanceUsingStr = "";
   float maxDistanceToShowStop = -1;
 
-/* -- Disables connection --- turns us just into a clock!
   switch (distanceToShow) {
     case Any:
       distanceRivian = bleClientRivian.readFloatValue();
@@ -197,7 +198,6 @@ void loop()
       distanceTesla = bleClientTesla.readFloatValue();
       break;
   }
- */
 
   // If we see a value significantly change then lock in that Vehicle until we show the time.
   // This allows for faster updating as we can focus on a single vehicle.
@@ -250,7 +250,7 @@ void loop()
   M5.Lcd.print(distanceUsingStr); M5.Lcd.print(distanceStr); clearToEndOfLine();
 
   if( millis() - lastDistanceChangeTime > NoChangeDistanceTimeoutMs ) {
-    rebootIfNeeded(false);
+    rebootIfNeeded(false, true);
 
     // Clear the LED periodically to see if we can recover from the display getting confused.
     //if (millis() - lastLedClearTime >= LedClearIntervalMs) {
